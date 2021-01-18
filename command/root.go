@@ -40,7 +40,6 @@ func ExecuteContext(ctx context.Context) error {
 	// Global flags.
 	var outOpts output.Options
 	rootCmd.PersistentFlags().StringVar(&outOpts.Addr, "addr", "", "destination address")
-	rootCmd.MarkPersistentFlagRequired("addr")
 	rootCmd.PersistentFlags().DurationVar(&outOpts.Delay, "delay", 0, "delay streaming")
 	rootCmd.PersistentFlags().StringVarP(&outOpts.Protocol, "protocol", "p", "tcp", "protocol (tcp/udp/tls)")
 	rootCmd.PersistentFlags().IntVar(&outOpts.Retries, "retry", 10, "connection retry attempts")
@@ -48,6 +47,7 @@ func ExecuteContext(ctx context.Context) error {
 	// Sub-commands.
 	rootCmd.AddCommand(newLogRunner(&outOpts, logger))
 	rootCmd.AddCommand(newPCAPRunner(&outOpts, logger))
+	rootCmd.AddCommand(versionCmd)
 	return rootCmd.ExecuteContext(ctx)
 }
 
