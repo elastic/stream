@@ -6,6 +6,9 @@ check-fmt: goimports
 docker:
 	docker build -t akroh/stream:${VERSION} .
 
+publish: docker
+	docker push akroh/stream:${VERSION}
+
 fmt: goimports
 	goimports -l -w -local github.com/andrewkroh .
 
