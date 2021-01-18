@@ -1,0 +1,6 @@
+*
+!command
+!pkg
+!*.go
+!go.mod
+!go.sum
