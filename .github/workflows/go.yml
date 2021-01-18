@@ -19,7 +19,7 @@ on:
       - '.github/workflows/go.yml'
 
 jobs:
-  test:
+  all:
     runs-on: ubuntu-latest
     steps:
       - name: checkout
@@ -30,7 +30,7 @@ jobs:
         with:
           go-version: 1.15
 
-      - name: Install libpcap
+      - name: install libpcap
         run: sudo apt-get install libpcap-dev
 
       - name: check fmt
@@ -45,10 +45,8 @@ jobs:
       - name: go test
         run: go test ./...
 
-      - name: install goimports
-        env:
-          GO111MODULE: off
-        run: go get golang.org/x/tools/cmd/goimports
+      - name: go build
+        run: go build
 
       - name: build image
         run: make docker

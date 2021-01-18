@@ -1,0 +1,29 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+jobs:
+  docker:
+    runs-on: ubuntu-latest
+    steps:
+      - name: checkout
+        uses: actions/checkout@master
+
+      - name: set release version
+        id: release_version
+        run: echo ::set-output name=tag::${GITHUB_REF#refs/*/}
+
+      - name: login to Docker Hub
+        uses: docker/login-action@v1
+        with:
+          username: ${{ secrets.DOCKER_HUB_USERNAME }}
+          password: ${{ secrets.DOCKER_HUB_ACCESS_TOKEN }}
+
+      - name: build docker image
+        env:
+          VERSION: ${{ steps.release_version.outputs.tag }}
+        run: make docker publish
+
