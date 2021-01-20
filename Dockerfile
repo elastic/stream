@@ -19,4 +19,4 @@ COPY --chown=0:0 --from=builder /usr/lib/x86_64-linux-gnu/libpcap.so.0.8 /usr/li
 COPY --chown=0:0 --from=builder /usr/lib/x86_64-linux-gnu/libpcap.so.1.8.1 /usr/lib/x86_64-linux-gnu/libpcap.so.1.8.1
 COPY --chown=0:0 --from=builder /app/stream /stream
 
-ENTRYPOINT "/stream"
+ENTRYPOINT ["/stream"]
