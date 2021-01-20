@@ -14,13 +14,6 @@ func Initialize(opts *Options, logger *zap.SugaredLogger, ctx context.Context) (
 		return nil, err
 	}
 
-	if opts.Delay > 0 {
-		logger.Debugw("Delaying connection.", "delay", opts.Delay)
-		if err = timed.Wait(ctx, opts.Delay); err != nil {
-			return nil, err
-		}
-	}
-
 	var dialErr error
 	for i := 0; i < opts.Retries; i++ {
 		if ctx.Err() != nil {

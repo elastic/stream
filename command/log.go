@@ -7,6 +7,7 @@ import (
 	"github.com/spf13/cobra"
 	"go.uber.org/zap"
 
+	"github.com/andrewkroh/stream/pkg/cmdutil"
 	"github.com/andrewkroh/stream/pkg/output"
 )
 
@@ -23,7 +24,7 @@ func newLogRunner(options *output.Options, logger *zap.Logger) *cobra.Command {
 		cmd: &cobra.Command{
 			Use:   "log [log file to stream]",
 			Short: "Stream log file lines",
-			Args:  cobra.ExactArgs(1),
+			Args:  cmdutil.ValidateArgs(cobra.MinimumNArgs(1), cmdutil.RegularFiles),
 		},
 	}
 
@@ -36,17 +37,29 @@ func newLogRunner(options *output.Options, logger *zap.Logger) *cobra.Command {
 }
 
 func (r *logRunner) Run(files []string) error {
-	f, err := os.Open(files[0])
+	out, err := output.Initialize(r.out, r.logger, r.cmd.Context())
+	if err != nil {
+		return err
+	}
+	defer out.Close()
+
+	for _, f := range files {
+		if err := r.sendLog(f, out); err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (r *logRunner) sendLog(path string, out output.Output) error {
+	logger := r.logger.With("log", path)
+
+	f, err := os.Open(path)
 	if err != nil {
 		return err
 	}
 	defer f.Close()
-
-	o, err := output.Initialize(r.out, r.logger, r.cmd.Context())
-	if err != nil {
-		return err
-	}
-	defer o.Close()
 
 	var totalBytes, totalLines int
 	s := bufio.NewScanner(bufio.NewReader(f))
@@ -55,11 +68,12 @@ func (r *logRunner) Run(files []string) error {
 			break
 		}
 
-		r.logger.Debug("Writing packet")
-		n, err := o.Write(s.Bytes())
+		logger.Debugw("Sending log line.", "line_number", totalLines+1)
+		n, err := out.Write(append(s.Bytes(), '\n'))
 		if err != nil {
 			return err
 		}
+
 		totalBytes += n
 		totalLines++
 	}
@@ -67,6 +81,6 @@ func (r *logRunner) Run(files []string) error {
 		return s.Err()
 	}
 
-	r.logger.Infow("Log data sent", "sent_bytes", totalBytes, "sent_lines", totalLines)
+	logger.Infow("Log data sent.", "total_bytes", totalBytes, "total_lines", totalLines)
 	return nil
 }

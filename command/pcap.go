@@ -6,6 +6,7 @@ import (
 	"github.com/spf13/cobra"
 	"go.uber.org/zap"
 
+	"github.com/andrewkroh/stream/pkg/cmdutil"
 	"github.com/andrewkroh/stream/pkg/output"
 )
 
@@ -22,7 +23,7 @@ func newPCAPRunner(options *output.Options, logger *zap.Logger) *cobra.Command {
 		cmd: &cobra.Command{
 			Use:   "pcap [pcap data to stream]",
 			Short: "Stream PCAP payload data",
-			Args:  cobra.ExactArgs(1),
+			Args:  cmdutil.ValidateArgs(cobra.MinimumNArgs(1), cmdutil.RegularFiles),
 		},
 	}
 
@@ -34,18 +35,30 @@ func newPCAPRunner(options *output.Options, logger *zap.Logger) *cobra.Command {
 	return r.cmd
 }
 
-func (r *pcapRunner) Run(pcapFiles []string) error {
-	f, err := pcap.OpenOffline(pcapFiles[0])
+func (r *pcapRunner) Run(files []string) error {
+	out, err := output.Initialize(r.out, r.logger, r.cmd.Context())
+	if err != nil {
+		return err
+	}
+	defer out.Close()
+
+	for _, f := range files {
+		if err := r.sendPCAP(f, out); err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (r *pcapRunner) sendPCAP(path string, out output.Output) error {
+	logger := r.logger.With("pcap", path)
+
+	f, err := pcap.OpenOffline(path)
 	if err != nil {
 		return err
 	}
 	defer f.Close()
-
-	o, err := output.Initialize(r.out, r.logger, r.cmd.Context())
-	if err != nil {
-		return err
-	}
-	defer o.Close()
 
 	// Process packets in PCAP and get flow records.
 	var totalBytes, totalPackets int
@@ -58,8 +71,7 @@ func (r *pcapRunner) Run(pcapFiles []string) error {
 		payloadData := packet.TransportLayer().LayerPayload()
 
 		// TODO: Rate-limit for UDP.
-		r.logger.Debug("Writing packet")
-		n, err := o.Write(payloadData)
+		n, err := out.Write(payloadData)
 		if err != nil {
 			return err
 		}
@@ -67,6 +79,6 @@ func (r *pcapRunner) Run(pcapFiles []string) error {
 		totalPackets++
 	}
 
-	r.logger.Infow("Sent data", "sent_bytes", totalBytes, "sent_packets", totalPackets)
+	logger.Infow("Sent PCAP payload data", "total_bytes", totalBytes, "total_packets", totalPackets)
 	return nil
 }

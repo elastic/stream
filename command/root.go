@@ -2,12 +2,17 @@ package command
 
 import (
 	"context"
+	"fmt"
 	"os"
 	"os/signal"
 
+	"github.com/elastic/go-concert/ctxtool/osctx"
+	"github.com/elastic/go-concert/timed"
 	"github.com/spf13/cobra"
+	"go.uber.org/multierr"
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
+	"golang.org/x/sys/unix"
 
 	"github.com/andrewkroh/stream/pkg/output"
 
@@ -38,16 +43,26 @@ func ExecuteContext(ctx context.Context) error {
 	rootCmd := &cobra.Command{Use: "stream", SilenceUsage: true}
 
 	// Global flags.
-	var outOpts output.Options
-	rootCmd.PersistentFlags().StringVar(&outOpts.Addr, "addr", "", "destination address")
-	rootCmd.PersistentFlags().DurationVar(&outOpts.Delay, "delay", 0, "delay streaming")
-	rootCmd.PersistentFlags().StringVarP(&outOpts.Protocol, "protocol", "p", "tcp", "protocol (tcp/udp/tls)")
-	rootCmd.PersistentFlags().IntVar(&outOpts.Retries, "retry", 10, "connection retry attempts")
+	var opts output.Options
+	rootCmd.PersistentFlags().StringVar(&opts.Addr, "addr", "", "destination address")
+	rootCmd.PersistentFlags().DurationVar(&opts.Delay, "delay", 0, "delay start after start-signal")
+	rootCmd.PersistentFlags().StringVarP(&opts.Protocol, "protocol", "p", "tcp", "protocol (tcp/udp/tls)")
+	rootCmd.PersistentFlags().IntVar(&opts.Retries, "retry", 10, "connection retry attempts for tcp based protocols")
+	rootCmd.PersistentFlags().StringVarP(&opts.StartSignal, "start-signal", "s", "", "wait for start signal")
 
 	// Sub-commands.
-	rootCmd.AddCommand(newLogRunner(&outOpts, logger))
-	rootCmd.AddCommand(newPCAPRunner(&outOpts, logger))
+	rootCmd.AddCommand(newLogRunner(&opts, logger))
+	rootCmd.AddCommand(newPCAPRunner(&opts, logger))
 	rootCmd.AddCommand(versionCmd)
+
+	// Add common start-up delay logic.
+	rootCmd.PersistentPreRunE = func(cmd *cobra.Command, args []string) error {
+		return multierr.Combine(
+			waitForStartSignal(&opts, cmd.Context(), logger),
+			waitForDelay(&opts, cmd.Context(), logger),
+		)
+	}
+
 	return rootCmd.ExecuteContext(ctx)
 }
 
@@ -60,4 +75,33 @@ func logger() (*zap.Logger, error) {
 		return nil, err
 	}
 	return log, nil
+}
+
+func waitForStartSignal(opts *output.Options, parent context.Context, logger *zap.Logger) error {
+	if opts.StartSignal == "" {
+		return nil
+	}
+
+	num := unix.SignalNum(opts.StartSignal)
+	if num == 0 {
+		return fmt.Errorf("unknown signal %v", opts.StartSignal)
+	}
+
+	// Wait for the signal or the command context to be done.
+	logger.Sugar().Infow("Waiting for signal.", "start-signal", opts.StartSignal)
+	startCtx, _ := osctx.WithSignal(parent, os.Signal(num))
+	<-startCtx.Done()
+	return nil
+}
+
+func waitForDelay(opts *output.Options, parent context.Context, logger *zap.Logger) error {
+	if opts.Delay <= 0 {
+		return nil
+	}
+
+	logger.Sugar().Info("Delaying connection.", "delay", opts.Delay)
+	if err := timed.Wait(parent, opts.Delay); err != nil {
+		return fmt.Errorf("delay waiting period was interrupted: %w", err)
+	}
+	return nil
 }

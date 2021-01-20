@@ -6,5 +6,7 @@ require (
 	github.com/elastic/go-concert v0.0.4
 	github.com/google/gopacket v1.1.19
 	github.com/spf13/cobra v1.1.1
+	go.uber.org/multierr v1.1.0
 	go.uber.org/zap v1.10.0
+	golang.org/x/sys v0.0.0-20190624142023-c5567b49c5d0
 )
