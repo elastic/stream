@@ -103,7 +103,7 @@ func waitForDelay(opts *output.Options, parent context.Context, logger *zap.Logg
 		return nil
 	}
 
-	logger.Sugar().Info("Delaying connection.", "delay", opts.Delay)
+	logger.Sugar().Infow("Delaying connection.", "delay", opts.Delay)
 	if err := timed.Wait(parent, opts.Delay); err != nil {
 		return fmt.Errorf("delay waiting period was interrupted: %w", err)
 	}
