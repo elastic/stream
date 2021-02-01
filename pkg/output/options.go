@@ -12,4 +12,13 @@ type Options struct {
 	Protocol    string        // Protocol (udp/tcp/tls).
 	Retries     int           // Number of connection retries for tcp based protocols.
 	StartSignal string        // OS signal to wait on before starting.
+
+	WebhookOptions
+}
+
+type WebhookOptions struct {
+	ContentType string   // Content-Type header.
+	Headers     []string // Headers in Key=Value format.
+	Username    string   // Basic auth username.
+	Password    string   // Basic auth password.
 }
