@@ -9,10 +9,12 @@ import (
 	"fmt"
 	"os"
 	"os/signal"
+	"strings"
 
 	"github.com/elastic/go-concert/ctxtool/osctx"
 	"github.com/elastic/go-concert/timed"
 	"github.com/spf13/cobra"
+	"github.com/spf13/pflag"
 	"go.uber.org/multierr"
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
@@ -24,6 +26,7 @@ import (
 	_ "github.com/andrewkroh/stream/pkg/output/tcp"
 	_ "github.com/andrewkroh/stream/pkg/output/tls"
 	_ "github.com/andrewkroh/stream/pkg/output/udp"
+	_ "github.com/andrewkroh/stream/pkg/output/webhook"
 )
 
 func Execute() error {
@@ -50,9 +53,15 @@ func ExecuteContext(ctx context.Context) error {
 	var opts output.Options
 	rootCmd.PersistentFlags().StringVar(&opts.Addr, "addr", "", "destination address")
 	rootCmd.PersistentFlags().DurationVar(&opts.Delay, "delay", 0, "delay start after start-signal")
-	rootCmd.PersistentFlags().StringVarP(&opts.Protocol, "protocol", "p", "tcp", "protocol (tcp/udp/tls)")
+	rootCmd.PersistentFlags().StringVarP(&opts.Protocol, "protocol", "p", "tcp", "protocol ("+strings.Join(output.Available(), "/")+")")
 	rootCmd.PersistentFlags().IntVar(&opts.Retries, "retry", 10, "connection retry attempts for tcp based protocols")
 	rootCmd.PersistentFlags().StringVarP(&opts.StartSignal, "start-signal", "s", "", "wait for start signal")
+
+	// Webhook output flags.
+	rootCmd.PersistentFlags().StringVar(&opts.WebhookOptions.ContentType, "webhook-content-type", "application/json", "webhook Content-Type")
+	rootCmd.PersistentFlags().StringArrayVar(&opts.WebhookOptions.Headers, "webhook-header", nil, "webhook header to add to request (e.g. Header=Value)")
+	rootCmd.PersistentFlags().StringVar(&opts.WebhookOptions.Password, "webhook-password", "", "webhook password for basic authentication")
+	rootCmd.PersistentFlags().StringVar(&opts.WebhookOptions.Username, "webhook-username", "", "webhook username for basic authentication")
 
 	// Sub-commands.
 	rootCmd.AddCommand(newLogRunner(&opts, logger))
@@ -66,6 +75,9 @@ func ExecuteContext(ctx context.Context) error {
 			waitForDelay(&opts, cmd.Context(), logger),
 		)
 	}
+
+	// Automatically set flags based on environment variables.
+	rootCmd.PersistentFlags().VisitAll(setFlagFromEnv)
 
 	return rootCmd.ExecuteContext(ctx)
 }
@@ -108,4 +120,15 @@ func waitForDelay(opts *output.Options, parent context.Context, logger *zap.Logg
 		return fmt.Errorf("delay waiting period was interrupted: %w", err)
 	}
 	return nil
+}
+
+func setFlagFromEnv(flag *pflag.Flag) {
+	envVar := strings.ToUpper(flag.Name)
+	envVar = strings.ReplaceAll(envVar, "-", "_")
+	envVar = "STREAM_" + envVar
+
+	flag.Usage = fmt.Sprintf("%v [env %v]", flag.Usage, envVar)
+	if value := os.Getenv(envVar); value != "" {
+		flag.Value.Set(value)
+	}
 }

@@ -8,6 +8,7 @@ import (
 	"context"
 	"fmt"
 	"io"
+	"sort"
 	"strings"
 )
 
@@ -35,4 +36,13 @@ func New(opts *Options) (Output, error) {
 	}
 
 	return factory(opts)
+}
+
+func Available() []string {
+	outputs := make([]string, 0, len(registry))
+	for k := range registry {
+		outputs = append(outputs, k)
+	}
+	sort.Strings(outputs)
+	return outputs
 }
