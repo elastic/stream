@@ -12,6 +12,7 @@ type Options struct {
 	Protocol    string        // Protocol (udp/tcp/tls).
 	Retries     int           // Number of connection retries for tcp based protocols.
 	StartSignal string        // OS signal to wait on before starting.
+	InsecureTLS bool          // Disable TLS verification checks.
 
 	WebhookOptions
 }

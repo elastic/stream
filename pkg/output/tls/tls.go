@@ -29,7 +29,7 @@ func New(opts *output.Options) (output.Output, error) {
 func (o *Output) DialContext(ctx context.Context) error {
 	d := tls.Dialer{
 		Config: &tls.Config{
-			InsecureSkipVerify: true,
+			InsecureSkipVerify: o.opts.InsecureTLS,
 		},
 		NetDialer: &net.Dialer{Timeout: time.Second},
 	}
