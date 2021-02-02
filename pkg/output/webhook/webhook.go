@@ -7,6 +7,7 @@ package webhook
 import (
 	"bytes"
 	"context"
+	"crypto/tls"
 	"fmt"
 	"net/http"
 	"net/url"
@@ -32,6 +33,11 @@ func New(opts *output.Options) (output.Output, error) {
 
 	client := &http.Client{
 		Timeout: time.Second,
+		Transport: &http.Transport{
+			TLSClientConfig: &tls.Config{
+				InsecureSkipVerify: opts.InsecureTLS,
+			},
+		},
 	}
 
 	return &Output{opts: opts, client: client}, nil
