@@ -8,20 +8,29 @@ import (
 	"context"
 	"net"
 
+	"golang.org/x/time/rate"
+
 	"github.com/andrewkroh/stream/pkg/output"
 )
+
+const burst = 1024 * 1024
 
 func init() {
 	output.Register("udp", New)
 }
 
 type Output struct {
-	opts *output.Options
-	conn *net.UDPConn
+	opts  *output.Options
+	conn  *net.UDPConn
+	ctx   context.Context
+	limit *rate.Limiter
 }
 
 func New(opts *output.Options) (output.Output, error) {
-	return &Output{opts: opts}, nil
+	return &Output{
+		opts:  opts,
+		limit: rate.NewLimiter(rate.Limit(opts.RateLimit), burst),
+	}, nil
 }
 
 func (o *Output) DialContext(ctx context.Context) error {
@@ -36,6 +45,7 @@ func (o *Output) DialContext(ctx context.Context) error {
 	}
 
 	o.conn = conn
+	o.ctx = ctx
 	return nil
 }
 
@@ -44,5 +54,8 @@ func (o *Output) Close() error {
 }
 
 func (o *Output) Write(b []byte) (int, error) {
+	if err := o.limit.WaitN(o.ctx, len(b)); err != nil {
+		return 0, err
+	}
 	return o.conn.Write(b)
 }
