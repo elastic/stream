@@ -4,6 +4,8 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
 
+- Added `--rate-limit` flag to control rate (in bytes/sec) of UDP streaming. [#12](https://github.com/andrewkroh/stream/pull/12)
+
 ## [0.2.0]
 
 - Added `--insecure` to disable TLS verification for the TLS and webhook outputs.
