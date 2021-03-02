@@ -5,6 +5,7 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 ## [Unreleased]
 
 - Added `--rate-limit` flag to control rate (in bytes/sec) of UDP streaming. [#12](https://github.com/andrewkroh/stream/pull/12)
+- Added `gcppubsub` output option. [#13]
 
 ## [0.2.0]
 

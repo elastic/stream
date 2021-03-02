@@ -23,6 +23,7 @@ import (
 	"github.com/andrewkroh/stream/pkg/output"
 
 	// Register outputs.
+	_ "github.com/andrewkroh/stream/pkg/output/gcppubsub"
 	_ "github.com/andrewkroh/stream/pkg/output/tcp"
 	_ "github.com/andrewkroh/stream/pkg/output/tls"
 	_ "github.com/andrewkroh/stream/pkg/output/udp"
@@ -64,6 +65,12 @@ func ExecuteContext(ctx context.Context) error {
 	rootCmd.PersistentFlags().StringArrayVar(&opts.WebhookOptions.Headers, "webhook-header", nil, "webhook header to add to request (e.g. Header=Value)")
 	rootCmd.PersistentFlags().StringVar(&opts.WebhookOptions.Password, "webhook-password", "", "webhook password for basic authentication")
 	rootCmd.PersistentFlags().StringVar(&opts.WebhookOptions.Username, "webhook-username", "", "webhook username for basic authentication")
+
+	// GCP Pubsub output flags.
+	rootCmd.PersistentFlags().StringVar(&opts.GCPPubsubOptions.Project, "gcppubsub-project", "test", "GCP Pubsub project name")
+	rootCmd.PersistentFlags().StringVar(&opts.GCPPubsubOptions.Topic, "gcppubsub-topic", "topic", "GCP Pubsub topic name")
+	rootCmd.PersistentFlags().StringVar(&opts.GCPPubsubOptions.Subscription, "gcppubsub-subscription", "subscription", "GCP Pubsub subscription name")
+	rootCmd.PersistentFlags().BoolVar(&opts.GCPPubsubOptions.Clear, "gcppubsub-clear", true, "GCP Pubsub clear flag")
 
 	// Sub-commands.
 	rootCmd.AddCommand(newLogRunner(&opts, logger))

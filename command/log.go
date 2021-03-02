@@ -16,10 +16,9 @@ import (
 )
 
 type logRunner struct {
-	logger   *zap.SugaredLogger
-	cmd      *cobra.Command
-	out      *output.Options
-	pcapFile string
+	logger *zap.SugaredLogger
+	cmd    *cobra.Command
+	out    *output.Options
 }
 
 func newLogRunner(options *output.Options, logger *zap.Logger) *cobra.Command {

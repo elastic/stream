@@ -16,6 +16,7 @@ type Options struct {
 	RateLimit   int           // UDP rate limit in bytes.
 
 	WebhookOptions
+	GCPPubsubOptions
 }
 
 type WebhookOptions struct {
@@ -23,4 +24,11 @@ type WebhookOptions struct {
 	Headers     []string // Headers in Key=Value format.
 	Username    string   // Basic auth username.
 	Password    string   // Basic auth password.
+}
+
+type GCPPubsubOptions struct {
+	Project      string // Project name.
+	Topic        string // Topic name. Will create it if not exists.
+	Subscription string // Subscription name. Will create it if not exists.
+	Clear        bool   // Clear will clear all topics and subscriptions before running.
 }
