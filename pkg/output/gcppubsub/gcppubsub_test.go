@@ -81,7 +81,7 @@ func TestMain(m *testing.M) {
 		return nil
 	}); err != nil {
 		_ = pool.Purge(resource)
-		log.Fatalf("Could not connect to docker: %s", err)
+		log.Fatalf("Could not connect to the gcp pubsub emulator: %s", err)
 	}
 
 	code := m.Run()
