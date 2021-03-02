@@ -53,8 +53,9 @@ func (o *Output) DialContext(ctx context.Context) error {
 	if err != nil {
 		return err
 	}
+	defer resp.Body.Close()
+
 	_, err = ioutil.ReadAll(resp.Body)
-	resp.Body.Close()
 	if err != nil {
 		return err
 	}
