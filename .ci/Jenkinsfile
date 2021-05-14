@@ -12,6 +12,7 @@ pipeline {
     DOCKER_IMG = "${env.DOCKER_REGISTRY}/observability/stream"
     DOCKER_IMG_PR = "${env.DOCKER_REGISTRY}/observability-ci/stream"
     PIPELINE_LOG_LEVEL = 'INFO'
+    GO_VERSION = '1.15'
   }
   options {
     timeout(time: 1, unit: 'HOURS')
@@ -49,52 +50,35 @@ pipeline {
         }
       }
     }
-    stage('Test') {
-      failFast false
-      matrix {
-        agent {label "${PLATFORM}"}
-        options { skipDefaultCheckout() }
-        axes {
-          axis {
-            name 'PLATFORM'
-            values 'ubuntu-20 && immutable'
-          }
-          axis {
-            name 'GO_VERSION'
-            values '1.15'
+    stages {
+      stage('build'){
+        steps {
+          withGithubNotify(context: "Build-${GO_VERSION}") {
+            deleteDir()
+            unstash 'source'
+            withGoEnv(){
+              dir("${BASE_DIR}"){
+                cmd(label: 'Go build', script: 'go build')
+              }
+            }
           }
         }
-        stages {
-          stage('build'){
-            steps {
-              withGithubNotify(context: "Build-${GO_VERSION}-${PLATFORM}") {
-                deleteDir()
-                unstash 'source'
-                withGoEnv(){
-                  dir("${BASE_DIR}"){
-                    cmd(label: 'Go build', script: 'go build')
-                  }
-                }
+      }
+      stage('Test') {
+        steps {
+          withGithubNotify(context: "Test-${GO_VERSION}") {
+            deleteDir()
+            unstash 'source'
+            withGoEnv(){
+              dir("${BASE_DIR}"){
+                goTestJUnit(options: '-v ./...', output: 'junit-report.xml')
               }
             }
           }
-          stage('Test') {
-            steps {
-              withGithubNotify(context: "Test-${GO_VERSION}-${PLATFORM}") {
-                deleteDir()
-                unstash 'source'
-                withGoEnv(){
-                  dir("${BASE_DIR}"){
-                    goTestJUnit(options: '-v ./...', output: 'junit-report.xml')
-                  }
-                }
-              }
-            }
-            post {
-              always {
-                junit(allowEmptyResults: true, keepLongStdio: true, testResults: '**/junit-report.xml')
-              }
-            }
+        }
+        post {
+          always {
+            junit(allowEmptyResults: true, keepLongStdio: true, testResults: '**/junit-report.xml')
           }
         }
       }
