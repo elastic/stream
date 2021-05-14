@@ -10,7 +10,7 @@ import (
 
 	"golang.org/x/time/rate"
 
-	"github.com/andrewkroh/stream/pkg/output"
+	"github.com/elastic/stream/pkg/output"
 )
 
 const burst = 1024 * 1024
