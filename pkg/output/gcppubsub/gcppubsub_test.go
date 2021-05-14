@@ -21,7 +21,7 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
-	"github.com/andrewkroh/stream/pkg/output"
+	"github.com/elastic/stream/pkg/output"
 )
 
 const (

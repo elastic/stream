@@ -1,4 +1,4 @@
-module github.com/andrewkroh/stream
+module github.com/elastic/stream
 
 go 1.15
 

@@ -20,14 +20,14 @@ import (
 	"go.uber.org/zap/zapcore"
 	"golang.org/x/sys/unix"
 
-	"github.com/andrewkroh/stream/pkg/output"
+	"github.com/elastic/stream/pkg/output"
 
 	// Register outputs.
-	_ "github.com/andrewkroh/stream/pkg/output/gcppubsub"
-	_ "github.com/andrewkroh/stream/pkg/output/tcp"
-	_ "github.com/andrewkroh/stream/pkg/output/tls"
-	_ "github.com/andrewkroh/stream/pkg/output/udp"
-	_ "github.com/andrewkroh/stream/pkg/output/webhook"
+	_ "github.com/elastic/stream/pkg/output/gcppubsub"
+	_ "github.com/elastic/stream/pkg/output/tcp"
+	_ "github.com/elastic/stream/pkg/output/tls"
+	_ "github.com/elastic/stream/pkg/output/udp"
+	_ "github.com/elastic/stream/pkg/output/webhook"
 )
 
 func Execute() error {

@@ -11,8 +11,8 @@ import (
 	"github.com/spf13/cobra"
 	"go.uber.org/zap"
 
-	"github.com/andrewkroh/stream/pkg/cmdutil"
-	"github.com/andrewkroh/stream/pkg/output"
+	"github.com/elastic/stream/pkg/cmdutil"
+	"github.com/elastic/stream/pkg/output"
 )
 
 type logRunner struct {

@@ -6,8 +6,8 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [0.3.0]
 
-- Added `--rate-limit` flag to control rate (in bytes/sec) of UDP streaming. [#12](https://github.com/andrewkroh/stream/pull/12)
-- Added `gcppubsub` output option. [#13](https://github.com/andrewkroh/stream/pull/13)
+- Added `--rate-limit` flag to control rate (in bytes/sec) of UDP streaming. [#12](https://github.com/elastic/stream/pull/12)
+- Added `gcppubsub` output option. [#13](https://github.com/elastic/stream/pull/13)
 
 ## [0.2.0]
 
@@ -27,8 +27,8 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 - Added pcap and log file inputs.
 - Added udp, tcp, and tls outputs.
 
-[Unreleased]: https://github.com/andrewkroh/stream/compare/v0.3.0...HEAD
-[0.3.0]: https://github.com/andrewkroh/stream/releases/tag/v0.3.0
-[0.2.0]: https://github.com/andrewkroh/stream/releases/tag/v0.2.0
-[0.1.0]: https://github.com/andrewkroh/stream/releases/tag/v0.1.0
-[0.0.1]: https://github.com/andrewkroh/stream/releases/tag/v0.0.1
+[Unreleased]: https://github.com/elastic/stream/compare/v0.3.0...HEAD
+[0.3.0]: https://github.com/elastic/stream/releases/tag/v0.3.0
+[0.2.0]: https://github.com/elastic/stream/releases/tag/v0.2.0
+[0.1.0]: https://github.com/elastic/stream/releases/tag/v0.1.0
+[0.0.1]: https://github.com/elastic/stream/releases/tag/v0.0.1

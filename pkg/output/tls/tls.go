@@ -10,7 +10,7 @@ import (
 	"net"
 	"time"
 
-	"github.com/andrewkroh/stream/pkg/output"
+	"github.com/elastic/stream/pkg/output"
 )
 
 func init() {
