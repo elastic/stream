@@ -1,0 +1,161 @@
+#!/usr/bin/env groovy
+
+@Library('apm@current') _
+
+pipeline {
+  agent { label 'ubuntu-20 && immutable' }
+  environment {
+    REPO = "stream"
+    BASE_DIR = "src/github.com/elastic/${env.REPO}"
+    DOCKER_REGISTRY = 'docker.elastic.co'
+    DOCKER_REGISTRY_SECRET = 'secret/observability-team/ci/docker-registry/prod'
+    DOCKER_IMG = "${env.DOCKER_REGISTRY}/observability/stream"
+    DOCKER_IMG_PR = "${env.DOCKER_REGISTRY}/observability-ci/stream"
+    PIPELINE_LOG_LEVEL = 'INFO'
+  }
+  options {
+    timeout(time: 1, unit: 'HOURS')
+    buildDiscarder(logRotator(numToKeepStr: '20', artifactNumToKeepStr: '20', daysToKeepStr: '30'))
+    timestamps()
+    ansiColor('xterm')
+    disableResume()
+    durabilityHint('PERFORMANCE_OPTIMIZED')
+    rateLimitBuilds(throttle: [count: 60, durationName: 'hour', userBoost: true])
+    quietPeriod(10)
+  }
+  triggers {
+    issueCommentTrigger('(?i)(.*(?:jenkins\\W+)?run\\W+(?:the\\W+)?tests(?:\\W+please)?.*|^/test$)')
+  }
+  stages {
+    stage('Checkout') {
+      steps {
+        deleteDir()
+        gitCheckout(basedir: "${BASE_DIR}")
+        stash allowEmpty: true, name: 'source', useDefaultExcludes: false
+      }
+    }
+    stage('Lint'){
+      steps {
+        withGithubNotify(context: "Lint") {
+          withGoEnv(){
+            dir("${BASE_DIR}"){
+              sh(label: 'lint', script: '''
+                go mod tidy && git diff --exit-code
+                make check-fmt
+              ''')
+              sh(label: 'Go vet', script: 'go vet')
+            }
+          }
+        }
+      }
+    }
+    stage('Test') {
+      failFast false
+      matrix {
+        agent {label "${PLATFORM}"}
+        options { skipDefaultCheckout() }
+        axes {
+          axis {
+            name 'PLATFORM'
+            values 'ubuntu-20 && immutable'
+          }
+          axis {
+            name 'GO_VERSION'
+            values '1.15'
+          }
+        }
+        stages {
+          stage('build'){
+            steps {
+              withGithubNotify(context: "Build-${GO_VERSION}-${PLATFORM}") {
+                deleteDir()
+                unstash 'source'
+                withGoEnv(){
+                  dir("${BASE_DIR}"){
+                    cmd(label: 'Go build', script: 'go build')
+                  }
+                }
+              }
+            }
+          }
+          stage('Test') {
+            steps {
+              withGithubNotify(context: "Test-${GO_VERSION}-${PLATFORM}") {
+                deleteDir()
+                unstash 'source'
+                withGoEnv(){
+                  dir("${BASE_DIR}"){
+                    goTestJUnit(options: '-v ./...', output: 'junit-report.xml')
+                  }
+                }
+              }
+            }
+            post {
+              always {
+                junit(allowEmptyResults: true, keepLongStdio: true, testResults: '**/junit-report.xml')
+              }
+            }
+          }
+        }
+      }
+    }
+    stage('Publish PR Docker image'){
+      when { changeRequest() }
+      steps {
+        buildAndPushDockerImage(env.DOCKER_IMG_PR)
+      }
+    }
+    stage('Publish Docker image'){
+      when { not { changeRequest() } }
+      steps {
+        buildAndPushDockerImage(env.DOCKER_IMG)
+      }
+    }
+    stage('Publish Release Docker image'){
+      when { tag 'v*' }
+      steps {
+        retagAndPushDockerImage(oldTag: getDockerImageGitCommitTag(env.DOCKER_IMG),
+                                newTag: "${env.DOCKER_IMG}:${env.TAG_NAME}")
+      }
+    }
+  }
+  post {
+    cleanup {
+      notifyBuildResult(prComment: true)
+    }
+  }
+}
+
+def buildAndPushDockerImage(String dockerImage){
+  def dockerImageGitCommitTag = getDockerImageGitCommitTag(dockerImage)
+  def dockerImageBranchTag = "${dockerImage}:${env.BRANCH_NAME}"
+  dir("${BASE_DIR}"){
+    dockerLogin(secret: "${env.DOCKER_REGISTRY_SECRET}", registry: "${env.DOCKER_REGISTRY}")
+    sh(label: 'Build Docker image',
+       script: """docker build \
+                  -t ${dockerImageGitCommitTag} \
+                  --label BRANCH_NAME=${env.BRANCH_NAME} \
+                  --label GIT_SHA=${env.GIT_BASE_COMMIT} \
+                  --label GO_VERSION=${env.GO_VERSION} \
+                  --label TIMESTAMP=\$(date +%Y-%m-%d_%H:%M) \
+                  .""")
+    retryWithSleep(retries: 3, seconds: 5, backoff: true){
+      sh(label: 'Push Docker image sha', script: "docker push ${dockerImageGitCommitTag}")
+    }
+    retagAndPushDockerImage(oldTag: dockerImageGitCommitTag,
+                            newTag: dockerImageBranchTag)
+  }
+}
+
+def retagAndPushDockerImage(def args = [:]) {
+  String oldTag = args.oldTag
+  String newTag = args.newTag
+  retryWithSleep(retries: 3, seconds: 5, backoff: true){
+    sh(label: 'Re-tag Docker image', script: "docker tag ${oldTag} ${newTag}")
+    sh(label: 'Push Docker image name', script: "docker push ${newTag}")
+  }
+}
+
+def getDockerImageGitCommitTag(String dockerImage){
+  return "${dockerImage}:${env.GIT_BASE_COMMIT}"
+}
