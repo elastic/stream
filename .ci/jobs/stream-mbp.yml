@@ -1,7 +1,7 @@
 ---
 - job:
     name: Library/stream-mbp
-    display-name: Streaming data via udp/tcp/tls/webhook/GCP Pub-Sub
+    display-name: Streaming data Pub-Sub
     description: Streaming data via udp/tcp/tls/webhook/GCP Pub-Sub MBP
     project-type: multibranch
     concurrent: true
