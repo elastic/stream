@@ -10,6 +10,7 @@ import (
 	"os"
 	"os/signal"
 	"strings"
+	"time"
 
 	"github.com/elastic/go-concert/ctxtool/osctx"
 	"github.com/elastic/go-concert/timed"
@@ -17,9 +18,9 @@ import (
 	"github.com/spf13/pflag"
 	"go.uber.org/multierr"
 	"go.uber.org/zap"
-	"go.uber.org/zap/zapcore"
 	"golang.org/x/sys/unix"
 
+	"github.com/elastic/stream/pkg/log"
 	"github.com/elastic/stream/pkg/output"
 
 	// Register outputs.
@@ -43,7 +44,7 @@ func Execute() error {
 }
 
 func ExecuteContext(ctx context.Context) error {
-	logger, err := logger()
+	logger, err := log.NewLogger()
 	if err != nil {
 		return nil
 	}
@@ -72,6 +73,13 @@ func ExecuteContext(ctx context.Context) error {
 	rootCmd.PersistentFlags().StringVar(&opts.GCPPubsubOptions.Subscription, "gcppubsub-subscription", "subscription", "GCP Pubsub subscription name")
 	rootCmd.PersistentFlags().BoolVar(&opts.GCPPubsubOptions.Clear, "gcppubsub-clear", true, "GCP Pubsub clear flag")
 
+	// HTTP output flags.
+	rootCmd.PersistentFlags().DurationVar(&opts.HTTPSrvOptions.ReadTimeout, "httpsrv-read-timeout", 5*time.Second, "HTTP Server read timeout")
+	rootCmd.PersistentFlags().DurationVar(&opts.HTTPSrvOptions.WriteTimeout, "httpsrv-write-timeout", 5*time.Second, "HTTP Server write timeout")
+	rootCmd.PersistentFlags().StringVar(&opts.HTTPSrvOptions.TLSCertificate, "httpsrv-tls-cert", "", "Path to the TLS certificate")
+	rootCmd.PersistentFlags().StringVar(&opts.HTTPSrvOptions.TLSKey, "httpsrv-tls-key", "", "Path to the TLS key file")
+	rootCmd.PersistentFlags().StringArrayVar(&opts.HTTPSrvOptions.ResponseHeaders, "httpsrv-response-headers", []string{"content-type", "application/json"}, "List of headers key-values")
+
 	// Sub-commands.
 	rootCmd.AddCommand(newLogRunner(&opts, logger))
 	rootCmd.AddCommand(newPCAPRunner(&opts, logger))
@@ -89,17 +97,6 @@ func ExecuteContext(ctx context.Context) error {
 	rootCmd.PersistentFlags().VisitAll(setFlagFromEnv)
 
 	return rootCmd.ExecuteContext(ctx)
-}
-
-func logger() (*zap.Logger, error) {
-	conf := zap.NewProductionConfig()
-	conf.EncoderConfig.EncodeTime = zapcore.ISO8601TimeEncoder
-	conf.Level = zap.NewAtomicLevelAt(zap.DebugLevel)
-	log, err := conf.Build()
-	if err != nil {
-		return nil, err
-	}
-	return log, nil
 }
 
 func waitForStartSignal(opts *output.Options, parent context.Context, logger *zap.Logger) error {
