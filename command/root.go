@@ -25,6 +25,7 @@ import (
 
 	// Register outputs.
 	_ "github.com/elastic/stream/pkg/output/gcppubsub"
+	_ "github.com/elastic/stream/pkg/output/httpserver"
 	_ "github.com/elastic/stream/pkg/output/tcp"
 	_ "github.com/elastic/stream/pkg/output/tls"
 	_ "github.com/elastic/stream/pkg/output/udp"
@@ -74,11 +75,11 @@ func ExecuteContext(ctx context.Context) error {
 	rootCmd.PersistentFlags().BoolVar(&opts.GCPPubsubOptions.Clear, "gcppubsub-clear", true, "GCP Pubsub clear flag")
 
 	// HTTP output flags.
-	rootCmd.PersistentFlags().DurationVar(&opts.HTTPSrvOptions.ReadTimeout, "httpsrv-read-timeout", 5*time.Second, "HTTP Server read timeout")
-	rootCmd.PersistentFlags().DurationVar(&opts.HTTPSrvOptions.WriteTimeout, "httpsrv-write-timeout", 5*time.Second, "HTTP Server write timeout")
-	rootCmd.PersistentFlags().StringVar(&opts.HTTPSrvOptions.TLSCertificate, "httpsrv-tls-cert", "", "Path to the TLS certificate")
-	rootCmd.PersistentFlags().StringVar(&opts.HTTPSrvOptions.TLSKey, "httpsrv-tls-key", "", "Path to the TLS key file")
-	rootCmd.PersistentFlags().StringArrayVar(&opts.HTTPSrvOptions.ResponseHeaders, "httpsrv-response-headers", []string{"content-type", "application/json"}, "List of headers key-values")
+	rootCmd.PersistentFlags().DurationVar(&opts.HTTPServerOptions.ReadTimeout, "http-server-read-timeout", 5*time.Second, "HTTP Server read timeout")
+	rootCmd.PersistentFlags().DurationVar(&opts.HTTPServerOptions.WriteTimeout, "http-server-write-timeout", 5*time.Second, "HTTP Server write timeout")
+	rootCmd.PersistentFlags().StringVar(&opts.HTTPServerOptions.TLSCertificate, "http-server-tls-cert", "", "Path to the TLS certificate")
+	rootCmd.PersistentFlags().StringVar(&opts.HTTPServerOptions.TLSKey, "http-server-tls-key", "", "Path to the TLS key file")
+	rootCmd.PersistentFlags().StringArrayVar(&opts.HTTPServerOptions.ResponseHeaders, "http-server-response-headers", []string{"content-type", "application/json"}, "List of headers key-values")
 
 	// Sub-commands.
 	rootCmd.AddCommand(newLogRunner(&opts, logger))

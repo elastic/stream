@@ -1,7 +1,7 @@
 // Licensed to Elasticsearch B.V. under one or more agreements.
 // Elasticsearch B.V. licenses this file to you under the Apache 2.0 License.
 // See the LICENSE file in the project root for more information.
-package http
+package httpserver
 
 import (
 	"context"
@@ -19,7 +19,7 @@ import (
 )
 
 func init() {
-	output.Register("httpsrv", New)
+	output.Register("http-server", New)
 }
 
 type Output struct {
@@ -27,6 +27,7 @@ type Output struct {
 	opts    *output.Options
 	server  *http.Server
 	logChan chan []byte
+	ctx     context.Context
 }
 
 func New(opts *output.Options) (output.Output, error) {
@@ -34,12 +35,12 @@ func New(opts *output.Options) (output.Output, error) {
 		return nil, errors.New("a listen address is required")
 	}
 
-	if !(opts.HTTPSrvOptions.TLSCertificate == "" && opts.HTTPSrvOptions.TLSKey == "") &&
-		!(opts.HTTPSrvOptions.TLSCertificate != "" && opts.HTTPSrvOptions.TLSKey != "") {
+	if !(opts.HTTPServerOptions.TLSCertificate == "" && opts.HTTPServerOptions.TLSKey == "") &&
+		!(opts.HTTPServerOptions.TLSCertificate != "" && opts.HTTPServerOptions.TLSKey != "") {
 		return nil, errors.New("both TLS certificate and key files must be defined")
 	}
 
-	if len(opts.HTTPSrvOptions.ResponseHeaders)%2 != 0 {
+	if len(opts.HTTPServerOptions.ResponseHeaders)%2 != 0 {
 		return nil, errors.New("response headers must be a list of pairs")
 	}
 
@@ -52,8 +53,8 @@ func New(opts *output.Options) (output.Output, error) {
 	logChan := make(chan []byte)
 	server := &http.Server{
 		Addr:           opts.Addr,
-		ReadTimeout:    opts.HTTPSrvOptions.ReadTimeout,
-		WriteTimeout:   opts.HTTPSrvOptions.WriteTimeout,
+		ReadTimeout:    opts.HTTPServerOptions.ReadTimeout,
+		WriteTimeout:   opts.HTTPServerOptions.WriteTimeout,
 		MaxHeaderBytes: 1 << 20,
 		Handler:        newHandler(opts, logChan, slogger),
 	}
@@ -67,30 +68,37 @@ func New(opts *output.Options) (output.Output, error) {
 }
 
 func (o *Output) DialContext(ctx context.Context) error {
+	o.ctx = ctx
+
 	if o.opts.TLSCertificate != "" && o.opts.TLSKey != "" {
 		go func() { o.logger.Info(o.server.ListenAndServeTLS(o.opts.TLSCertificate, o.opts.TLSKey)) }()
 	} else {
 		go func() { o.logger.Info(o.server.ListenAndServe()) }()
 	}
+
 	return nil
 }
 
 func (o *Output) Close() error {
 	defer close(o.logChan)
 
-	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	o.logger.Infow("shutting down http_server...")
+
+	ctx, cancel := context.WithTimeout(o.ctx, time.Second)
 	defer cancel()
 
-	_ = o.server.Shutdown(ctx)
-	return nil
+	return o.server.Shutdown(ctx)
 }
 
 func (o *Output) Write(b []byte) (int, error) {
-	timer := time.NewTimer(time.Minute)
-	defer timer.Stop()
+	if o.ctx == nil {
+		return 0, errors.New("DialContext needs to be called before Write can be used")
+	}
+
 	select {
-	case <-timer.C:
-		return 0, errors.New("waiting to write for too long")
+	case <-o.ctx.Done():
+		o.logger.Infow("the output has been closed")
+		return 0, nil
 	case o.logChan <- b:
 		return len(b), nil
 	}
@@ -103,8 +111,8 @@ func newHandler(opts *output.Options, logChan <-chan []byte, logger *zap.Sugared
 		defer r.Body.Close()
 		logger.Debug(strRequest(r))
 
-		for i := 0; i < len(opts.HTTPSrvOptions.ResponseHeaders); i += 2 {
-			w.Header().Add(opts.HTTPSrvOptions.ResponseHeaders[i], opts.HTTPSrvOptions.ResponseHeaders[i+1])
+		for i := 0; i < len(opts.HTTPServerOptions.ResponseHeaders); i += 2 {
+			w.Header().Add(opts.HTTPServerOptions.ResponseHeaders[i], opts.HTTPServerOptions.ResponseHeaders[i+1])
 		}
 
 		_, _ = w.Write(b)

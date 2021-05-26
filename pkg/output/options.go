@@ -17,7 +17,7 @@ type Options struct {
 
 	WebhookOptions
 	GCPPubsubOptions
-	HTTPSrvOptions
+	HTTPServerOptions
 }
 
 type WebhookOptions struct {
@@ -34,7 +34,7 @@ type GCPPubsubOptions struct {
 	Clear        bool   // Clear will clear all topics and subscriptions before running.
 }
 
-type HTTPSrvOptions struct {
+type HTTPServerOptions struct {
 	TLSCertificate  string        // TLS certificate file path.
 	TLSKey          string        // TLS key file path.
 	ResponseHeaders []string      // KV list of response headers.
