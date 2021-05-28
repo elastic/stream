@@ -48,7 +48,7 @@ func New(opts *output.Options) (output.Output, error) {
 	if err != nil {
 		return nil, err
 	}
-	slogger := logger.Sugar().With("output", "httpsrv")
+	slogger := logger.Sugar().With("output", "http-server")
 
 	logChan := make(chan []byte)
 	server := &http.Server{

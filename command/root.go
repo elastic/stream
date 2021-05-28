@@ -12,13 +12,14 @@ import (
 	"strings"
 	"time"
 
-	"github.com/elastic/go-concert/ctxtool/osctx"
-	"github.com/elastic/go-concert/timed"
 	"github.com/spf13/cobra"
 	"github.com/spf13/pflag"
 	"go.uber.org/multierr"
 	"go.uber.org/zap"
 	"golang.org/x/sys/unix"
+
+	"github.com/elastic/go-concert/ctxtool/osctx"
+	"github.com/elastic/go-concert/timed"
 
 	"github.com/elastic/stream/pkg/log"
 	"github.com/elastic/stream/pkg/output"

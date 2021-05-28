@@ -8,8 +8,9 @@ import (
 	"context"
 	"time"
 
-	"github.com/elastic/go-concert/timed"
 	"go.uber.org/zap"
+
+	"github.com/elastic/go-concert/timed"
 )
 
 func Initialize(opts *Options, logger *zap.SugaredLogger, ctx context.Context) (Output, error) {
