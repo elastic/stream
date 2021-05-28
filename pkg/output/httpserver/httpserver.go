@@ -8,6 +8,7 @@ import (
 	"errors"
 	"fmt"
 	"io/ioutil"
+	"net"
 	"net/http"
 	"strings"
 	"time"
@@ -23,11 +24,12 @@ func init() {
 }
 
 type Output struct {
-	logger  *zap.SugaredLogger
-	opts    *output.Options
-	server  *http.Server
-	logChan chan []byte
-	ctx     context.Context
+	logger   *zap.SugaredLogger
+	opts     *output.Options
+	listener net.Listener
+	server   *http.Server
+	logChan  chan []byte
+	ctx      context.Context
 }
 
 func New(opts *output.Options) (output.Output, error) {
@@ -52,7 +54,6 @@ func New(opts *output.Options) (output.Output, error) {
 
 	logChan := make(chan []byte)
 	server := &http.Server{
-		Addr:           opts.Addr,
 		ReadTimeout:    opts.HTTPServerOptions.ReadTimeout,
 		WriteTimeout:   opts.HTTPServerOptions.WriteTimeout,
 		MaxHeaderBytes: 1 << 20,
@@ -70,10 +71,19 @@ func New(opts *output.Options) (output.Output, error) {
 func (o *Output) DialContext(ctx context.Context) error {
 	o.ctx = ctx
 
+	l, err := net.Listen("tcp", o.opts.Addr)
+	if err != nil {
+		if l, err = net.Listen("tcp6", o.opts.Addr); err != nil {
+			return fmt.Errorf("failed to listen on address: %v", err)
+		}
+	}
+
+	o.listener = l
+
 	if o.opts.TLSCertificate != "" && o.opts.TLSKey != "" {
-		go func() { o.logger.Info(o.server.ListenAndServeTLS(o.opts.TLSCertificate, o.opts.TLSKey)) }()
+		go func() { o.logger.Info(o.server.ServeTLS(l, o.opts.TLSCertificate, o.opts.TLSKey)) }()
 	} else {
-		go func() { o.logger.Info(o.server.ListenAndServe()) }()
+		go func() { o.logger.Info(o.server.Serve(l)) }()
 	}
 
 	return nil

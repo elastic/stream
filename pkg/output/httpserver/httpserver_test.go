@@ -48,7 +48,7 @@ func TestHTTPServer(t *testing.T) {
 		tc := tc
 		t.Run(tc.description, func(t *testing.T) {
 			out, err := New(&output.Options{
-				Addr:              "127.0.0.1:1111",
+				Addr:              "127.0.0.1:0", // pick a random port
 				HTTPServerOptions: tc.opts,
 			})
 
@@ -76,8 +76,10 @@ func TestHTTPServer(t *testing.T) {
 				}(in)
 
 				<-trigger
-				
-				resp, err := http.Get("http://127.0.0.1:1111")
+
+				addr := out.(*Output).listener.Addr().String()
+
+				resp, err := http.Get("http://" + addr)
 				require.NoError(t, err)
 				t.Cleanup(func() { resp.Body.Close() })
 
