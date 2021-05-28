@@ -59,7 +59,7 @@ func TestHTTPServer(t *testing.T) {
 				var n int
 				var werr error
 				var wg sync.WaitGroup
-
+				trigger := make(chan struct{})
 				wg.Add(1)
 				go func(in string) {
 					defer wg.Done()
@@ -70,10 +70,13 @@ func TestHTTPServer(t *testing.T) {
 					select {
 					case <-timeout.C:
 					default:
+						close(trigger)
 						n, werr = out.Write([]byte(in))
 					}
 				}(in)
 
+				<-trigger
+				
 				resp, err := http.Get("http://127.0.0.1:1111")
 				require.NoError(t, err)
 				t.Cleanup(func() { resp.Body.Close() })
