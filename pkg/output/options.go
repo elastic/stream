@@ -17,6 +17,7 @@ type Options struct {
 
 	WebhookOptions
 	GCPPubsubOptions
+	HTTPServerOptions
 }
 
 type WebhookOptions struct {
@@ -31,4 +32,12 @@ type GCPPubsubOptions struct {
 	Topic        string // Topic name. Will create it if not exists.
 	Subscription string // Subscription name. Will create it if not exists.
 	Clear        bool   // Clear will clear all topics and subscriptions before running.
+}
+
+type HTTPServerOptions struct {
+	TLSCertificate  string        // TLS certificate file path.
+	TLSKey          string        // TLS key file path.
+	ResponseHeaders []string      // KV list of response headers.
+	ReadTimeout     time.Duration // HTTP Server read timeout.
+	WriteTimeout    time.Duration // HTTP Server write timeout.
 }
