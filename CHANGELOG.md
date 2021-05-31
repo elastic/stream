@@ -4,6 +4,8 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
 
+## [0.4.0]
+
 - Added HTTP Server output. [#19](https://github.com/elastic/stream/pull/19)
 
 ## [0.3.0]
@@ -29,7 +31,8 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 - Added pcap and log file inputs.
 - Added udp, tcp, and tls outputs.
 
-[Unreleased]: https://github.com/elastic/stream/compare/v0.3.0...HEAD
+[Unreleased]: https://github.com/elastic/stream/compare/v0.4.0...HEAD
+[0.4.0]: https://github.com/elastic/stream/releases/tag/v0.4.0
 [0.3.0]: https://github.com/elastic/stream/releases/tag/v0.3.0
 [0.2.0]: https://github.com/elastic/stream/releases/tag/v0.2.0
 [0.1.0]: https://github.com/elastic/stream/releases/tag/v0.1.0
