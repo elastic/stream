@@ -7,6 +7,7 @@ package cmdutil
 import (
 	"fmt"
 	"os"
+	"path/filepath"
 
 	"github.com/spf13/cobra"
 )
@@ -25,7 +26,11 @@ func ValidateArgs(validators ...cobra.PositionalArgs) cobra.PositionalArgs {
 
 // RegularFiles validates that each arg is a regular file.
 func RegularFiles(_ *cobra.Command, args []string) error {
-	for _, f := range args {
+	paths, err := ExpandGlobPatternsFromArgs(args)
+	if err != nil {
+		return err
+	}
+	for _, f := range paths {
 		info, err := os.Stat(f)
 		if err != nil {
 			return fmt.Errorf("arg %q is not a valid file: %w", f, err)
@@ -35,4 +40,16 @@ func RegularFiles(_ *cobra.Command, args []string) error {
 		}
 	}
 	return nil
+}
+
+func ExpandGlobPatternsFromArgs(args []string) ([]string, error) {
+	var paths []string
+	for _, pat := range args {
+		matches, err := filepath.Glob(pat)
+		if err != nil {
+			return nil, fmt.Errorf("invalid glob pattern %q: %w", pat, err)
+		}
+		paths = append(paths, matches...)
+	}
+	return paths, nil
 }
