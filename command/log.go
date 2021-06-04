@@ -71,8 +71,8 @@ func (r *logRunner) sendLog(path string, out output.Output) error {
 
 	var totalBytes, totalLines int
 	s := bufio.NewScanner(bufio.NewReader(f))
-	buf := make([]byte, r.out.LogReaderBuffer)
-	s.Buffer(buf, r.out.LogReaderBuffer)
+	buf := make([]byte, r.out.MaxLogLineSize)
+	s.Buffer(buf, r.out.MaxLogLineSize)
 	for s.Scan() {
 		if r.cmd.Context().Err() != nil {
 			break

@@ -62,7 +62,7 @@ func ExecuteContext(ctx context.Context) error {
 	rootCmd.PersistentFlags().StringVarP(&opts.StartSignal, "start-signal", "s", "", "wait for start signal")
 	rootCmd.PersistentFlags().BoolVar(&opts.InsecureTLS, "insecure", false, "disable tls verification")
 	rootCmd.PersistentFlags().IntVar(&opts.RateLimit, "rate-limit", 500*1024, "bytes per second rate limit for UDP output")
-	rootCmd.PersistentFlags().IntVar(&opts.LogReaderBuffer, "log-reader-buf", 500*1024, "buffer size in bytes of the log reader")
+	rootCmd.PersistentFlags().IntVar(&opts.MaxLogLineSize, "max-log-line-size", 500*1024, "max size of a single log line in bytes")
 
 	// Webhook output flags.
 	rootCmd.PersistentFlags().StringVar(&opts.WebhookOptions.ContentType, "webhook-content-type", "application/json", "webhook Content-Type")
