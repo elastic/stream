@@ -39,12 +39,17 @@ func newLogRunner(options *output.Options, logger *zap.Logger) *cobra.Command {
 	return r.cmd
 }
 
-func (r *logRunner) Run(files []string) error {
+func (r *logRunner) Run(args []string) error {
 	out, err := output.Initialize(r.out, r.logger, r.cmd.Context())
 	if err != nil {
 		return err
 	}
 	defer out.Close()
+
+	files, err := cmdutil.ExpandGlobPatternsFromArgs(args)
+	if err != nil {
+		return err
+	}
 
 	for _, f := range files {
 		if err := r.sendLog(f, out); err != nil {
@@ -66,6 +71,8 @@ func (r *logRunner) sendLog(path string, out output.Output) error {
 
 	var totalBytes, totalLines int
 	s := bufio.NewScanner(bufio.NewReader(f))
+	buf := make([]byte, r.out.MaxLogLineSize)
+	s.Buffer(buf, r.out.MaxLogLineSize)
 	for s.Scan() {
 		if r.cmd.Context().Err() != nil {
 			break
