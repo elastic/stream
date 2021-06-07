@@ -21,12 +21,12 @@ import (
 	"github.com/elastic/go-concert/ctxtool/osctx"
 	"github.com/elastic/go-concert/timed"
 
+	"github.com/elastic/stream/pkg/httpserver"
 	"github.com/elastic/stream/pkg/log"
 	"github.com/elastic/stream/pkg/output"
 
 	// Register outputs.
 	_ "github.com/elastic/stream/pkg/output/gcppubsub"
-	_ "github.com/elastic/stream/pkg/output/httpserver"
 	_ "github.com/elastic/stream/pkg/output/tcp"
 	_ "github.com/elastic/stream/pkg/output/tls"
 	_ "github.com/elastic/stream/pkg/output/udp"
@@ -76,16 +76,19 @@ func ExecuteContext(ctx context.Context) error {
 	rootCmd.PersistentFlags().StringVar(&opts.GCPPubsubOptions.Subscription, "gcppubsub-subscription", "subscription", "GCP Pubsub subscription name")
 	rootCmd.PersistentFlags().BoolVar(&opts.GCPPubsubOptions.Clear, "gcppubsub-clear", true, "GCP Pubsub clear flag")
 
-	// HTTP output flags.
-	rootCmd.PersistentFlags().DurationVar(&opts.HTTPServerOptions.ReadTimeout, "http-server-read-timeout", 5*time.Second, "HTTP Server read timeout")
-	rootCmd.PersistentFlags().DurationVar(&opts.HTTPServerOptions.WriteTimeout, "http-server-write-timeout", 5*time.Second, "HTTP Server write timeout")
-	rootCmd.PersistentFlags().StringVar(&opts.HTTPServerOptions.TLSCertificate, "http-server-tls-cert", "", "Path to the TLS certificate")
-	rootCmd.PersistentFlags().StringVar(&opts.HTTPServerOptions.TLSKey, "http-server-tls-key", "", "Path to the TLS key file")
-	rootCmd.PersistentFlags().StringArrayVar(&opts.HTTPServerOptions.ResponseHeaders, "http-server-response-headers", []string{"content-type", "application/json"}, "List of headers key-values")
-
 	// Sub-commands.
 	rootCmd.AddCommand(newLogRunner(&opts, logger))
 	rootCmd.AddCommand(newPCAPRunner(&opts, logger))
+
+	httpOpts := httpserver.Options{Options: &opts}
+	httpCommand := newHTTPServerRunner(&httpOpts, logger)
+	httpCommand.PersistentFlags().DurationVar(&httpOpts.ReadTimeout, "read-timeout", 5*time.Second, "HTTP Server read timeout")
+	httpCommand.PersistentFlags().DurationVar(&httpOpts.WriteTimeout, "write-timeout", 5*time.Second, "HTTP Server write timeout")
+	httpCommand.PersistentFlags().StringVar(&httpOpts.TLSCertificate, "tls-cert", "", "Path to the TLS certificate")
+	httpCommand.PersistentFlags().StringVar(&httpOpts.TLSKey, "tls-key", "", "Path to the TLS key file")
+	httpCommand.PersistentFlags().StringVar(&httpOpts.ConfigPath, "config", "", "Path to the config file")
+	rootCmd.AddCommand(httpCommand)
+
 	rootCmd.AddCommand(versionCmd)
 
 	// Add common start-up delay logic.
