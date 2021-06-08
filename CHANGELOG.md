@@ -4,6 +4,8 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
 
+## [0.5.0]
+
 - Added option to set up custom buffer size for the log reader. [#22](https://github.com/elastic/stream/pull/22)
 - Added support for glob patterns. [#22](https://github.com/elastic/stream/pull/22)
 - Convert `http-server` output into a mock HTTP server.[#23](https://github.com/elastic/stream/pull/23)
@@ -35,7 +37,8 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 - Added pcap and log file inputs.
 - Added udp, tcp, and tls outputs.
 
-[Unreleased]: https://github.com/elastic/stream/compare/v0.4.0...HEAD
+[Unreleased]: https://github.com/elastic/stream/compare/v0.5.0...HEAD
+[0.5.0]: https://github.com/elastic/stream/releases/tag/v0.5.0
 [0.4.0]: https://github.com/elastic/stream/releases/tag/v0.4.0
 [0.3.0]: https://github.com/elastic/stream/releases/tag/v0.3.0
 [0.2.0]: https://github.com/elastic/stream/releases/tag/v0.2.0
