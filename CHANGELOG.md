@@ -6,6 +6,7 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 
 - Added option to set up custom buffer size for the log reader. [#22](https://github.com/elastic/stream/pull/22)
 - Added support for glob patterns. [#22](https://github.com/elastic/stream/pull/22)
+- Convert `http-server` output into a mock HTTP server.[#23](https://github.com/elastic/stream/pull/23)
 
 ## [0.4.0]
 
