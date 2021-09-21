@@ -47,6 +47,7 @@ func (t *tpl) Unpack(in string) error {
 			"env":      env,
 			"hostname": hostname,
 			"sum":      sum,
+			"file":     file,
 		}).
 		Parse(in)
 	if err != nil {
@@ -87,4 +88,12 @@ func hostname() string {
 
 func sum(a, b int) int {
 	return a + b
+}
+
+func file(path string) (string, error) {
+	b, err := os.ReadFile(path)
+	if err != nil {
+		return "", err
+	}
+	return string(b), nil
 }
