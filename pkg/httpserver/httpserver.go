@@ -173,10 +173,19 @@ func newHandlerFromConfig(config *config, logger *zap.SugaredLogger) (http.Handl
 
 		route.MatcherFunc(func(r *http.Request, rm *mux.RouteMatch) bool {
 			user, password, _ := r.BasicAuth()
-			return rule.User == user && rule.Password == password
+			if rule.User != "" && user != rule.User {
+				return false
+			}
+			if rule.Password != "" && password != rule.Password {
+				return false
+			}
+			return true
 		})
 
 		route.MatcherFunc(func(r *http.Request, rm *mux.RouteMatch) bool {
+			if rule.RequestBody == "" {
+				return true
+			}
 			body, err := ioutil.ReadAll(r.Body)
 			if err != nil {
 				return false
