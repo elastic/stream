@@ -12,7 +12,7 @@ pipeline {
     DOCKER_IMG = "${env.DOCKER_REGISTRY}/observability/stream"
     DOCKER_IMG_PR = "${env.DOCKER_REGISTRY}/observability-ci/stream"
     PIPELINE_LOG_LEVEL = 'INFO'
-    GO_VERSION = '1.15'
+    GO_VERSION = '1.16'
   }
   options {
     timeout(time: 1, unit: 'HOURS')
