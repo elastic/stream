@@ -4,6 +4,15 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
 
+### Added
+
+- Added file template helper function. [#25](https://github.com/elastic/stream/pull/25)
+- Added regular expression-based body matching [#26](https://github.com/elastic/stream/pull/26)
+
+### Fixed
+
+- Ensure basic auth and body are only tested if explicitly set. [#28](https://github.com/elastic/stream/pull/28)
+
 ## [0.5.0]
 
 - Added option to set up custom buffer size for the log reader. [#22](https://github.com/elastic/stream/pull/22)
