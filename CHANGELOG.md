@@ -4,6 +4,8 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
 
+## [0.6.0]
+
 ### Added
 
 - Added file template helper function. [#25](https://github.com/elastic/stream/pull/25)
@@ -46,7 +48,8 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 - Added pcap and log file inputs.
 - Added udp, tcp, and tls outputs.
 
-[Unreleased]: https://github.com/elastic/stream/compare/v0.5.0...HEAD
+[Unreleased]: https://github.com/elastic/stream/compare/v0.6.0...HEAD
+[0.6.0]: https://github.com/elastic/stream/releases/tag/v0.6.0
 [0.5.0]: https://github.com/elastic/stream/releases/tag/v0.5.0
 [0.4.0]: https://github.com/elastic/stream/releases/tag/v0.4.0
 [0.3.0]: https://github.com/elastic/stream/releases/tag/v0.3.0
