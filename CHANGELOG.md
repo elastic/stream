@@ -7,6 +7,7 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 ### Added
 
 - Added file template helper function. [#25](https://github.com/elastic/stream/pull/25)
+- Added regular expression-based body matching [#26](https://github.com/elastic/stream/pull/26)
 
 ### Fixed
 
