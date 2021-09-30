@@ -11,6 +11,7 @@ import (
 	"io/ioutil"
 	"net"
 	"net/http"
+	"regexp"
 	"strings"
 	"time"
 
@@ -176,12 +177,24 @@ func newHandlerFromConfig(config *config, logger *zap.SugaredLogger) (http.Handl
 			return rule.User == user && rule.Password == password
 		})
 
+		var bodyRE *regexp.Regexp
+		if strings.HasPrefix(rule.RequestBody, "/") && strings.HasSuffix(rule.RequestBody, "/") {
+			re := strings.TrimPrefix(strings.TrimSuffix(rule.RequestBody, "/"), "/")
+			var err error
+			bodyRE, err = regexp.Compile(re)
+			if err != nil {
+				logger.Errorf("compiling body match regexp: %s", re, err)
+			}
+		}
 		route.MatcherFunc(func(r *http.Request, rm *mux.RouteMatch) bool {
 			body, err := ioutil.ReadAll(r.Body)
 			if err != nil {
 				return false
 			}
 			r.Body = ioutil.NopCloser(bytes.NewBuffer(body))
+			if bodyRE != nil {
+				return bodyRE.Match(body)
+			}
 			return rule.RequestBody == string(body)
 		})
 	}
