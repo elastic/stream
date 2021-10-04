@@ -4,6 +4,12 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
 
+## [0.6.1]
+
+### Fixed
+
+- Fixed libdbus shared object error in Dockerfile. [#30](https://github.com/elastic/stream/pull/30)
+
 ## [0.6.0]
 
 ### Added
@@ -48,7 +54,8 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 - Added pcap and log file inputs.
 - Added udp, tcp, and tls outputs.
 
-[Unreleased]: https://github.com/elastic/stream/compare/v0.6.0...HEAD
+[Unreleased]: https://github.com/elastic/stream/compare/v0.6.1...HEAD
+[0.6.1]: https://github.com/elastic/stream/releases/tag/v0.6.1
 [0.6.0]: https://github.com/elastic/stream/releases/tag/v0.6.0
 [0.5.0]: https://github.com/elastic/stream/releases/tag/v0.5.0
 [0.4.0]: https://github.com/elastic/stream/releases/tag/v0.4.0
