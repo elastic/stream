@@ -79,7 +79,7 @@ func (r *logRunner) sendLog(path string, out output.Output) error {
 		}
 
 		logger.Debugw("Sending log line.", "line_number", totalLines+1)
-		n, err := out.Write(append(s.Bytes(), '\n'))
+		n, err := out.Write(s.Bytes())
 		if err != nil {
 			return err
 		}

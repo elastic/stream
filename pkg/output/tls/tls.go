@@ -51,5 +51,5 @@ func (o *Output) Close() error {
 }
 
 func (o *Output) Write(b []byte) (int, error) {
-	return o.conn.Write(b)
+	return o.conn.Write(append(b, '\n'))
 }
