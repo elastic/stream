@@ -4,6 +4,11 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
 
+### Fixed
+
+- Only message sent via TCP and TLS are framed using newlines. UDP messages will
+no longer contain a trailing newline. [#31](https://github.com/elastic/stream/pull/31)
+
 ## [0.6.1]
 
 ### Fixed
