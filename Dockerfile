@@ -1,4 +1,4 @@
-FROM golang:1.16.8 as builder
+FROM golang:1.17.7 as builder
 
 RUN apt-get update \
        && apt-get install -y libpcap-dev \
@@ -15,9 +15,10 @@ RUN go build
 # ------------------------------------------------------------------------------
 FROM debian:stable-slim
 
-COPY --chown=0:0 --from=builder /usr/lib/x86_64-linux-gnu/libpcap.so.0.8 /usr/lib/x86_64-linux-gnu/libpcap.so.0.8
-COPY --chown=0:0 --from=builder /usr/lib/x86_64-linux-gnu/libpcap.so.1.10.0 /usr/lib/x86_64-linux-gnu/libpcap.so.1.10.0
-COPY --chown=0:0 --from=builder /lib/x86_64-linux-gnu/libdbus-1.so.3 /lib/x86_64-linux-gnu/libdbus-1.so.3
+RUN apt-get update \
+       && apt-get install -y libpcap0.8 \
+       && rm -rf /var/lib/apt/lists/*
+
 COPY --chown=0:0 --from=builder /app/stream /stream
 
 ENTRYPOINT ["/stream"]
