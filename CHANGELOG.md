@@ -4,6 +4,10 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
 
+### Added
+
+- go: Updated build to use Go 1.17.7. [#32](https://github.com/elastic/stream/pull/32)
+
 ## [0.6.2]
 
 ### Fixed
