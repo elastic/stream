@@ -8,6 +8,7 @@ import (
 	"errors"
 	"fmt"
 	"os"
+	"time"
 
 	"github.com/Shopify/sarama"
 	"github.com/elastic/stream/pkg/output"
@@ -36,11 +37,17 @@ func New(opts *output.Options) (output.Output, error) {
 	config.Producer.Partitioner = sarama.NewRandomPartitioner
 	config.Producer.RequiredAcks = sarama.WaitForAll
 	config.Producer.Return.Successes = true
-	producer, err := sarama.NewSyncProducer([]string{opts.Addr}, config)
+	saramaClient, _ := sarama.NewClient([]string{opts.Addr}, config)
+	producer, err := sarama.NewSyncProducerFromClient(saramaClient)
 	_, cancel := context.WithCancel(context.Background())
 	if err != nil {
 		cancel()
 		return nil, fmt.Errorf("failed to create client: %v", err)
+	}
+
+	for len(saramaClient.Brokers()) <= 0 {
+		time.Sleep(100000)
+		fmt.Println("sleeping")
 	}
 
 	return &Output{opts: opts, cancelFunc: cancel, client: producer, config: config}, nil
