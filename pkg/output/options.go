@@ -18,6 +18,7 @@ type Options struct {
 
 	WebhookOptions
 	GCPPubsubOptions
+	KafkaOptions
 }
 
 type WebhookOptions struct {
@@ -32,4 +33,8 @@ type GCPPubsubOptions struct {
 	Topic        string // Topic name. Will create it if not exists.
 	Subscription string // Subscription name. Will create it if not exists.
 	Clear        bool   // Clear will clear all topics and subscriptions before running.
+}
+
+type KafkaOptions struct {
+	Topic string // Topic name. Will create it if not exists.
 }

@@ -27,6 +27,7 @@ import (
 
 	// Register outputs.
 	_ "github.com/elastic/stream/pkg/output/gcppubsub"
+	_ "github.com/elastic/stream/pkg/output/kafka"
 	_ "github.com/elastic/stream/pkg/output/tcp"
 	_ "github.com/elastic/stream/pkg/output/tls"
 	_ "github.com/elastic/stream/pkg/output/udp"
@@ -75,6 +76,9 @@ func ExecuteContext(ctx context.Context) error {
 	rootCmd.PersistentFlags().StringVar(&opts.GCPPubsubOptions.Topic, "gcppubsub-topic", "topic", "GCP Pubsub topic name")
 	rootCmd.PersistentFlags().StringVar(&opts.GCPPubsubOptions.Subscription, "gcppubsub-subscription", "subscription", "GCP Pubsub subscription name")
 	rootCmd.PersistentFlags().BoolVar(&opts.GCPPubsubOptions.Clear, "gcppubsub-clear", true, "GCP Pubsub clear flag")
+
+	// Kafka Pubsub output flags.
+	rootCmd.PersistentFlags().StringVar(&opts.KafkaOptions.Topic, "kafka-topic", "test", "Kafka topic name")
 
 	// Sub-commands.
 	rootCmd.AddCommand(newLogRunner(&opts, logger))
