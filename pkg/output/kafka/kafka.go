@@ -7,7 +7,6 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"os"
 
 	"github.com/Shopify/sarama"
 
@@ -19,10 +18,9 @@ func init() {
 }
 
 type Output struct {
-	opts       *output.Options
-	client     sarama.SyncProducer
-	config     *sarama.Config
-	cancelFunc func()
+	opts   *output.Options
+	client sarama.SyncProducer
+	config *sarama.Config
 }
 
 func New(opts *output.Options) (output.Output, error) {
@@ -30,22 +28,21 @@ func New(opts *output.Options) (output.Output, error) {
 		return nil, errors.New("kafka address is required")
 	}
 
-	os.Setenv("KAFKA_HOST", opts.Addr)
-	os.Setenv("KAFKA_TOPIC", opts.KafkaOptions.Topic)
-
 	config := sarama.NewConfig()
 	config.Producer.Partitioner = sarama.NewRandomPartitioner
 	config.Producer.RequiredAcks = sarama.WaitForAll
 	config.Producer.Return.Successes = true
-	saramaClient, _ := sarama.NewClient([]string{opts.Addr}, config)
-	producer, err := sarama.NewSyncProducerFromClient(saramaClient)
-	_, cancel := context.WithCancel(context.Background())
+	saramaClient, err := sarama.NewClient([]string{opts.Addr}, config)
 	if err != nil {
-		cancel()
+		return nil, fmt.Errorf("failed to create sarama client: %w", err)
+	}
+
+	producer, err := sarama.NewSyncProducerFromClient(saramaClient)
+	if err != nil {
 		return nil, fmt.Errorf("failed to create producer client: %w", err)
 	}
 
-	return &Output{opts: opts, cancelFunc: cancel, client: producer, config: config}, nil
+	return &Output{opts: opts, client: producer, config: config}, nil
 }
 
 func (o *Output) DialContext(_ context.Context) error {
@@ -57,25 +54,21 @@ func (o *Output) DialContext(_ context.Context) error {
 }
 
 func (o *Output) Close() error {
-	o.cancelFunc()
+	o.client.Close()
 	return nil
 }
 
 func (o *Output) Write(b []byte) (int, error) {
-	_, cancel := context.WithCancel(context.Background())
-	defer cancel()
-
-	value := sarama.ByteEncoder(b)
 	msg := &sarama.ProducerMessage{
 		Topic: o.opts.KafkaOptions.Topic,
-		Value: value,
+		Value: sarama.ByteEncoder(b),
 	}
 	_, _, err := o.client.SendMessage(msg)
 	if err != nil {
 		return 0, fmt.Errorf("failed to create data in kafka topic: %w", err)
 	}
 
-	return value.Length(), nil
+	return len(b), nil
 }
 
 func (o *Output) createTopic() error {

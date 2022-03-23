@@ -5,9 +5,10 @@
 package kafka
 
 import (
-	"fmt"
 	"log"
+	"net"
 	"os"
+	"os/signal"
 	"strings"
 	"testing"
 
@@ -26,7 +27,10 @@ const (
 	topic        = "testTopic"
 )
 
-var outputevent string
+var (
+	outputevent         string
+	emulatorHostAndPort = net.JoinHostPort(emulatorHost, emulatorPort)
+)
 
 func TestMain(m *testing.M) {
 	pool, err := dockertest.NewPool("")
@@ -56,11 +60,8 @@ func TestMain(m *testing.M) {
 		config.Producer.Partitioner = sarama.NewRandomPartitioner
 		config.Producer.RequiredAcks = sarama.WaitForAll
 		config.Producer.Return.Successes = true
-		_, err := sarama.NewClient([]string{fmt.Sprintf("%s:%s", emulatorHost, emulatorPort)}, config)
-		if err != nil {
-			return err
-		}
-		return nil
+		_, err := sarama.NewClient([]string{emulatorHostAndPort}, config)
+		return err
 	}); err != nil {
 		_ = pool.Purge(resource)
 		log.Fatalf("Could not connect to the kafka instance: %s", err)
@@ -75,7 +76,7 @@ func TestMain(m *testing.M) {
 
 func TestKafka(t *testing.T) {
 	out, err := New(&output.Options{
-		Addr: fmt.Sprintf("%s:%s", emulatorHost, emulatorPort),
+		Addr: emulatorHostAndPort,
 		KafkaOptions: output.KafkaOptions{
 			Topic: topic,
 		},
@@ -83,29 +84,37 @@ func TestKafka(t *testing.T) {
 	require.NoError(t, err)
 
 	event := "testmessage something"
-	require.NoError(t, err)
 
 	n, err := out.Write([]byte(event))
 	require.NoError(t, err)
 	assert.Equal(t, len(event), n)
-	consumer, err := sarama.NewConsumer(strings.Split(fmt.Sprintf("%s:%s", emulatorHost, emulatorPort), ","), nil)
 
+	config := sarama.NewConfig()
+	config.Consumer.Return.Errors = true
+	consumer, err := sarama.NewConsumer(strings.Split(emulatorHostAndPort, ","), config)
 	require.NoError(t, err)
 
-	partitionList, err := consumer.Partitions(topic)
-	require.NoError(t, err)
+	defer consumer.Close()
 
-	for partition := range partitionList {
-		pc, err := consumer.ConsumePartition(topic, int32(partition), sarama.OffsetOldest)
-		if err != nil {
-			fmt.Printf("Failed to start consumer for partition %d: %s\n", partition, err)
+	pc, err := consumer.ConsumePartition(topic, 0, sarama.OffsetOldest)
+	if err != nil {
+		t.Logf("Failed to start partition consumer: %v", err)
+		return
+	}
+
+	signals := make(chan os.Signal, 1)
+	signal.Notify(signals, os.Interrupt)
+
+	for {
+		select {
+		case err := <-pc.Errors():
+			t.Logf("Failed to consume data from topic: %v", err)
+		case msg := <-pc.Messages():
+			outputevent = string(msg.Value)
+			assert.Equal(t, event, outputevent)
+			return
+		case <-signals:
 			return
 		}
-		for msg := range pc.Messages() {
-			outputevent = string(msg.Value)
-			break
-		}
 	}
-	assert.Equal(t, event, outputevent)
-	t.Cleanup(func() { _ = consumer.Close() })
 }
