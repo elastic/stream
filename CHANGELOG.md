@@ -6,7 +6,6 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 
 ### Added
 
-- go: Updated build to use Go 1.17.7. [#32](https://github.com/elastic/stream/pull/32)
 - Add kafka output support: [#33](https://github.com/elastic/stream/pull/33)
 - Update build to use Go 1.17.8, and update versions of runc and image-spec golang modules to fix dependabot [#34](https://github.com/elastic/stream/pull/34)
 
