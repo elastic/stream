@@ -20,15 +20,12 @@ import (
 )
 
 const (
-	emulatorHost  = "127.0.0.1"
-	emulatorPort  = "9092"
-	topic         = "testTopic"
-	consumerGroup = "testGroup"
+	emulatorHost = "127.0.0.1"
+	emulatorPort = "9092"
+	topic        = "testTopic"
 )
 
-var (
-	outputevent string
-)
+var outputevent string
 
 func TestMain(m *testing.M) {
 	pool, err := dockertest.NewPool("")
