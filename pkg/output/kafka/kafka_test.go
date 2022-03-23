@@ -8,7 +8,6 @@ import (
 	"log"
 	"net"
 	"os"
-	"os/signal"
 	"strings"
 	"testing"
 
@@ -28,7 +27,7 @@ const (
 )
 
 var (
-	outputevent         string
+	outputEvent         string
 	emulatorHostAndPort = net.JoinHostPort(emulatorHost, emulatorPort)
 )
 
@@ -55,6 +54,7 @@ func TestMain(m *testing.M) {
 	if err != nil {
 		log.Fatalf("Could not start resource: %s", err)
 	}
+
 	if err := pool.Retry(func() error {
 		config := sarama.NewConfig()
 		config.Producer.Partitioner = sarama.NewRandomPartitioner
@@ -98,22 +98,17 @@ func TestKafka(t *testing.T) {
 
 	pc, err := consumer.ConsumePartition(topic, 0, sarama.OffsetOldest)
 	if err != nil {
-		t.Logf("Failed to start partition consumer: %v", err)
+		t.Fatalf("Failed to start partition consumer: %v", err)
 		return
 	}
-
-	signals := make(chan os.Signal, 1)
-	signal.Notify(signals, os.Interrupt)
 
 	for {
 		select {
 		case err := <-pc.Errors():
-			t.Logf("Failed to consume data from topic: %v", err)
+			t.Fatal(err)
 		case msg := <-pc.Messages():
-			outputevent = string(msg.Value)
-			assert.Equal(t, event, outputevent)
-			return
-		case <-signals:
+			outputEvent = string(msg.Value)
+			assert.Equal(t, event, outputEvent)
 			return
 		}
 	}
