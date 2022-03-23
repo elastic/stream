@@ -12,11 +12,12 @@ import (
 	"testing"
 
 	"github.com/Shopify/sarama"
-	"github.com/elastic/stream/pkg/output"
 	"github.com/ory/dockertest/v3"
 	"github.com/ory/dockertest/v3/docker"
 	"github.com/stretchr/testify/require"
 	"gotest.tools/assert"
+
+	"github.com/elastic/stream/pkg/output"
 )
 
 const (

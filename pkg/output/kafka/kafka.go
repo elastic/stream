@@ -10,6 +10,7 @@ import (
 	"os"
 
 	"github.com/Shopify/sarama"
+
 	"github.com/elastic/stream/pkg/output"
 )
 
