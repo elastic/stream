@@ -1,6 +1,7 @@
 FROM golang:1.17.8 as builder
 
 RUN apt-get update \
+       && apt-get dist-upgrade -y \
        && apt-get install -y libpcap-dev \
        && rm -rf /var/lib/apt/lists/*
 
@@ -16,6 +17,7 @@ RUN go build
 FROM debian:stable-slim
 
 RUN apt-get update \
+       && apt-get dist-upgrade -y \
        && apt-get install -y libpcap0.8 \
        && rm -rf /var/lib/apt/lists/*
 
