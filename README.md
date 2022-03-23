@@ -9,6 +9,7 @@ stream is a test utility for streaming data via:
 - TLS
 - Webhook
 - GCP Pub-Sub
+- Kafka
 - HTTP Mock Server
 
 ## HTTP Server mock reference
