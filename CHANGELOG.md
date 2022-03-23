@@ -2,11 +2,12 @@
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
-## [Unreleased]
+## [0.7.0]
 
 ### Added
 
 - go: Updated build to use Go 1.17.7. [#32](https://github.com/elastic/stream/pull/32)
+- Add kafka output support: [#33](https://github.com/elastic/stream/pull/33)
 
 ## [0.6.2]
 
@@ -65,7 +66,8 @@ no longer contain a trailing newline. [#31](https://github.com/elastic/stream/pu
 - Added pcap and log file inputs.
 - Added udp, tcp, and tls outputs.
 
-[Unreleased]: https://github.com/elastic/stream/compare/v0.6.2...HEAD
+[Unreleased]: https://github.com/elastic/stream/compare/v0.7.0...HEAD
+[0.7.0]: https://github.com/elastic/stream/releases/tag/v0.7.0
 [0.6.2]: https://github.com/elastic/stream/releases/tag/v0.6.2
 [0.6.1]: https://github.com/elastic/stream/releases/tag/v0.6.1
 [0.6.0]: https://github.com/elastic/stream/releases/tag/v0.6.0
