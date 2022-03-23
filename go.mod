@@ -25,4 +25,5 @@ require (
 	golang.org/x/time v0.0.0-20210220033141-f8bda1e9f3ba
 	google.golang.org/api v0.47.0
 	google.golang.org/genproto v0.0.0-20210604141403-392c879c8b08 // indirect
+	gotest.tools v2.2.0+incompatible
 )

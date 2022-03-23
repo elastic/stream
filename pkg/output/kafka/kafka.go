@@ -8,7 +8,6 @@ import (
 	"errors"
 	"fmt"
 	"os"
-	"time"
 
 	"github.com/Shopify/sarama"
 	"github.com/elastic/stream/pkg/output"
@@ -42,12 +41,7 @@ func New(opts *output.Options) (output.Output, error) {
 	_, cancel := context.WithCancel(context.Background())
 	if err != nil {
 		cancel()
-		return nil, fmt.Errorf("failed to create client: %v", err)
-	}
-
-	for len(saramaClient.Brokers()) <= 0 {
-		time.Sleep(100000)
-		fmt.Println("sleeping")
+		return nil, fmt.Errorf("failed to create producer client: %v", err)
 	}
 
 	return &Output{opts: opts, cancelFunc: cancel, client: producer, config: config}, nil
@@ -86,8 +80,9 @@ func (o *Output) Write(b []byte) (int, error) {
 func (o *Output) createTopic() error {
 	admin, err := sarama.NewClusterAdmin([]string{o.opts.Addr}, o.config)
 	if err != nil {
-		return fmt.Errorf("failed to create client: %v", err)
+		return fmt.Errorf("failed to create cluster admin client: %v", err)
 	}
+
 	err = admin.CreateTopic(o.opts.KafkaOptions.Topic, &sarama.TopicDetail{
 		NumPartitions:     1,
 		ReplicationFactor: 1,

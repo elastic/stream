@@ -5,13 +5,10 @@
 package kafka
 
 import (
-	"context"
-	"encoding/json"
 	"fmt"
 	"log"
 	"os"
 	"strings"
-	"sync"
 	"testing"
 
 	"github.com/Shopify/sarama"
@@ -30,8 +27,7 @@ const (
 )
 
 var (
-	wg          sync.WaitGroup
-	outputevent map[string]interface{}
+	outputevent string
 )
 
 func TestMain(m *testing.M) {
@@ -57,6 +53,20 @@ func TestMain(m *testing.M) {
 	if err != nil {
 		log.Fatalf("Could not start resource: %s", err)
 	}
+	if err := pool.Retry(func() error {
+		config := sarama.NewConfig()
+		config.Producer.Partitioner = sarama.NewRandomPartitioner
+		config.Producer.RequiredAcks = sarama.WaitForAll
+		config.Producer.Return.Successes = true
+		_, err := sarama.NewClient([]string{fmt.Sprintf("%s:%s", emulatorHost, emulatorPort)}, config)
+		if err != nil {
+			return err
+		}
+		return nil
+	}); err != nil {
+		_ = pool.Purge(resource)
+		log.Fatalf("Could not connect to the kafka instance: %s", err)
+	}
 
 	code := m.Run()
 
@@ -74,19 +84,12 @@ func TestKafka(t *testing.T) {
 	})
 	require.NoError(t, err)
 
-	err = out.DialContext(context.Background())
+	event := "testmessage something"
 	require.NoError(t, err)
 
-	event := map[string]interface{}{
-		"message": "hello world!",
-	}
-	data, err := json.Marshal(event)
+	n, err := out.Write([]byte(event))
 	require.NoError(t, err)
-
-	n, err := out.Write(data)
-	require.NoError(t, err)
-	assert.Equal(t, len(data), n)
-
+	assert.Equal(t, len(event), n)
 	consumer, err := sarama.NewConsumer(strings.Split(fmt.Sprintf("%s:%s", emulatorHost, emulatorPort), ","), nil)
 
 	require.NoError(t, err)
@@ -95,23 +98,16 @@ func TestKafka(t *testing.T) {
 	require.NoError(t, err)
 
 	for partition := range partitionList {
-		pc, err := consumer.ConsumePartition(topic, int32(partition), sarama.OffsetNewest)
+		pc, err := consumer.ConsumePartition(topic, int32(partition), sarama.OffsetOldest)
 		if err != nil {
 			fmt.Printf("Failed to start consumer for partition %d: %s\n", partition, err)
 			return
 		}
-		defer pc.AsyncClose()
-		wg.Add(1)
-		go func(pc sarama.PartitionConsumer) {
-			defer wg.Done()
-			for msg := range pc.Messages() {
-				outputevent = map[string]interface{}{
-					string(msg.Key): string(msg.Value),
-				}
-			}
-		}(pc)
+		for msg := range pc.Messages() {
+			outputevent = string(msg.Value)
+			break
+		}
 	}
-	wg.Wait()
 	assert.Equal(t, event, outputevent)
-	consumer.Close()
+	t.Cleanup(func() { _ = consumer.Close() })
 }
