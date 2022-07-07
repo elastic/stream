@@ -78,7 +78,7 @@ func (o *Server) Start(ctx context.Context) error {
 	l, err := net.Listen("tcp", o.opts.Addr)
 	if err != nil {
 		if l, err = net.Listen("tcp6", o.opts.Addr); err != nil {
-			return fmt.Errorf("failed to listen on address: %v", err)
+			return fmt.Errorf("failed to listen on address: %w", err)
 		}
 	}
 
@@ -125,7 +125,7 @@ func newHandlerFromConfig(config *config, logger *zap.SugaredLogger) (http.Handl
 				return &rule.Responses[count%len(rule.Responses)]
 			}()
 
-			count += 1
+			count++
 
 			logger.Debug(fmt.Sprintf("Rule #%d matched: request #%d => %s", i, count, strRequest(r)))
 

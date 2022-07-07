@@ -2,6 +2,18 @@
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
+## [Unreleased]
+
+### Added
+
+### Changed
+
+- Update build to use Go 1.18. [#37](https://github.com/elastic/stream/pull/37)
+
+### Fixed
+
+### Removed
+
 ## [0.7.0]
 
 ### Added

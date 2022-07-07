@@ -59,7 +59,7 @@ func TestHTTPServer(t *testing.T) {
 
 	opts := Options{
 		Options: &output.Options{
-			Addr: ":0",
+			Addr: "localhost:0",
 		},
 		ConfigPath: f.Name(),
 	}
