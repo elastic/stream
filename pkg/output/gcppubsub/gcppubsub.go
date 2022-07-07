@@ -38,7 +38,7 @@ func New(opts *output.Options) (output.Output, error) {
 	client, err := pubsub.NewClient(ctx, opts.GCPPubsubOptions.Project)
 	if err != nil {
 		cancel()
-		return nil, fmt.Errorf("failed to create client: %v", err)
+		return nil, fmt.Errorf("failed to create client: %w", err)
 	}
 
 	return &Output{opts: opts, client: client, cancelFunc: cancel}, nil
@@ -109,14 +109,14 @@ func (o *Output) clear() error {
 	topics := o.client.Topics(ctx)
 	for {
 		topic, err := topics.Next()
-		if err == iterator.Done {
+		if errors.Is(err, iterator.Done) {
 			break
 		}
 		if err != nil {
 			return err
 		}
 		if err = topic.Delete(ctx); err != nil {
-			return fmt.Errorf("failed to delete topic %v: %v", topic.ID(), err)
+			return fmt.Errorf("failed to delete topic %v: %w", topic.ID(), err)
 		}
 	}
 
@@ -124,7 +124,7 @@ func (o *Output) clear() error {
 	subs := o.client.Subscriptions(ctx)
 	for {
 		sub, err := subs.Next()
-		if err == iterator.Done {
+		if errors.Is(err, iterator.Done) {
 			break
 		}
 		if err != nil {
@@ -132,7 +132,7 @@ func (o *Output) clear() error {
 		}
 
 		if err = sub.Delete(ctx); err != nil {
-			return fmt.Errorf("failed to delete subscription %v: %v", sub.ID(), err)
+			return fmt.Errorf("failed to delete subscription %v: %w", sub.ID(), err)
 		}
 	}
 
@@ -146,12 +146,12 @@ func (o *Output) createTopic() error {
 	topic := o.client.Topic(o.opts.GCPPubsubOptions.Topic)
 	exists, err := topic.Exists(ctx)
 	if err != nil {
-		return fmt.Errorf("failed to check if topic exists: %v", err)
+		return fmt.Errorf("failed to check if topic exists: %w", err)
 	}
 
 	if !exists {
 		if _, err := o.client.CreateTopic(ctx, o.opts.GCPPubsubOptions.Topic); err != nil {
-			return fmt.Errorf("failed to create the topic: %v", err)
+			return fmt.Errorf("failed to create the topic: %w", err)
 		}
 	}
 
@@ -165,7 +165,7 @@ func (o *Output) createSubscription() error {
 	sub := o.client.Subscription(o.opts.GCPPubsubOptions.Subscription)
 	exists, err := sub.Exists(ctx)
 	if err != nil {
-		return fmt.Errorf("failed to check if sub exists: %v", err)
+		return fmt.Errorf("failed to check if sub exists: %w", err)
 	}
 
 	if !exists {
@@ -177,7 +177,7 @@ func (o *Output) createSubscription() error {
 			},
 		)
 		if err != nil {
-			return fmt.Errorf("failed to create subscription: %v", err)
+			return fmt.Errorf("failed to create subscription: %w", err)
 		}
 	}
 
