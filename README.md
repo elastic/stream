@@ -12,6 +12,12 @@ stream is a test utility for streaming data via:
 - Kafka
 - HTTP Mock Server
 
+Input data can be read from:
+
+- log file - Newline delimited files are streamed line by line.
+- pcap file - Each packet's transport layer payload is streamed as a packet.
+  Useful for replaying netflow and IPFIX captures.
+
 ## HTTP Server mock reference
 
 `stream` can also serve logs setting up a complete HTTP mock server.
