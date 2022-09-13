@@ -28,6 +28,7 @@ import (
 	// Register outputs.
 	_ "github.com/elastic/stream/pkg/output/gcppubsub"
 	_ "github.com/elastic/stream/pkg/output/kafka"
+	_ "github.com/elastic/stream/pkg/output/lumberjack"
 	_ "github.com/elastic/stream/pkg/output/tcp"
 	_ "github.com/elastic/stream/pkg/output/tls"
 	_ "github.com/elastic/stream/pkg/output/udp"
@@ -79,6 +80,9 @@ func ExecuteContext(ctx context.Context) error {
 
 	// Kafka Pubsub output flags.
 	rootCmd.PersistentFlags().StringVar(&opts.KafkaOptions.Topic, "kafka-topic", "test", "Kafka topic name")
+
+	// Lumberjack output flags.
+	rootCmd.PersistentFlags().BoolVar(&opts.LumberjackOptions.ParseJSON, "lumberjack-parse-json", false, "Parse the input data as JSON and send the structured data as a Lumberjack batch.")
 
 	// Sub-commands.
 	rootCmd.AddCommand(newLogRunner(&opts, logger))

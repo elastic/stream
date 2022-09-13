@@ -6,6 +6,8 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 
 ### Added
 
+- Add lumberjack output support: [#41](https://github.com/elastic/stream/pull/41)
+
 ### Changed
 
 - Update build to use Go 1.18. [#37](https://github.com/elastic/stream/pull/37)

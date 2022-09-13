@@ -6,6 +6,7 @@ require (
 	cloud.google.com/go/pubsub v1.23.1
 	github.com/Shopify/sarama v1.34.1
 	github.com/elastic/go-concert v0.2.0
+	github.com/elastic/go-lumber v0.1.2-0.20220819171948-335fde24ea0f
 	github.com/elastic/go-ucfg v0.8.6
 	github.com/google/gopacket v1.1.19
 	github.com/gorilla/mux v1.8.0
@@ -56,7 +57,7 @@ require (
 	github.com/jcmturner/gofork v1.0.0 // indirect
 	github.com/jcmturner/gokrb5/v8 v8.4.2 // indirect
 	github.com/jcmturner/rpc/v2 v2.0.3 // indirect
-	github.com/klauspost/compress v1.15.7 // indirect
+	github.com/klauspost/compress v1.15.9 // indirect
 	github.com/mitchellh/mapstructure v1.5.0 // indirect
 	github.com/moby/term v0.0.0-20210619224110-3f7ff695adc6 // indirect
 	github.com/opencontainers/go-digest v1.0.0 // indirect
