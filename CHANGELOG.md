@@ -8,7 +8,7 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 
 ### Changed
 
-- Update build to use Go 1.18. [#37](https://github.com/elastic/stream/pull/37)
+- Update build to use Go 1.19. [#40](https://github.com/elastic/stream/pull/40)
 
 ### Fixed
 
