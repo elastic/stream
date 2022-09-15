@@ -6,15 +6,21 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 
 ### Added
 
+### Changed
+
+### Fixed
+
+### Removed
+
+## [0.8.0]
+
+### Added
+
 - Add lumberjack output support: [#41](https://github.com/elastic/stream/pull/41)
 
 ### Changed
 
 - Update build to use Go 1.19. [#40](https://github.com/elastic/stream/pull/40)
-
-### Fixed
-
-### Removed
 
 ## [0.7.0]
 
@@ -80,7 +86,8 @@ no longer contain a trailing newline. [#31](https://github.com/elastic/stream/pu
 - Added pcap and log file inputs.
 - Added udp, tcp, and tls outputs.
 
-[Unreleased]: https://github.com/elastic/stream/compare/v0.7.0...HEAD
+[Unreleased]: https://github.com/elastic/stream/compare/v0.8.0...HEAD
+[0.8.0]: https://github.com/elastic/stream/releases/tag/v0.8.0
 [0.7.0]: https://github.com/elastic/stream/releases/tag/v0.7.0
 [0.6.2]: https://github.com/elastic/stream/releases/tag/v0.6.2
 [0.6.1]: https://github.com/elastic/stream/releases/tag/v0.6.1
