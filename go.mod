@@ -6,6 +6,7 @@ require (
 	cloud.google.com/go/pubsub v1.25.1
 	github.com/Shopify/sarama v1.36.0
 	github.com/elastic/go-concert v0.2.0
+	github.com/elastic/go-lumber v0.1.2-0.20220819171948-335fde24ea0f
 	github.com/elastic/go-ucfg v0.8.6
 	github.com/google/gopacket v1.1.19
 	github.com/gorilla/mux v1.8.0

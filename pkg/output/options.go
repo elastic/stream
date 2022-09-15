@@ -19,6 +19,7 @@ type Options struct {
 	WebhookOptions
 	GCPPubsubOptions
 	KafkaOptions
+	LumberjackOptions
 }
 
 type WebhookOptions struct {
@@ -37,4 +38,8 @@ type GCPPubsubOptions struct {
 
 type KafkaOptions struct {
 	Topic string // Topic name. Will create it if not exists.
+}
+
+type LumberjackOptions struct {
+	ParseJSON bool // Parse the input bytes as JSON and send structured data. By default, input bytes are sent in a 'message' field.
 }

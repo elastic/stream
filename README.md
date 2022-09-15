@@ -10,6 +10,7 @@ stream is a test utility for streaming data via:
 - Webhook
 - GCP Pub-Sub
 - Kafka
+- [Lumberjack](#lumberjack-output-reference)
 - HTTP Mock Server
 
 Input data can be read from:
@@ -86,3 +87,29 @@ When using [Go templates](https://golang.org/pkg/text/template/) as part of the 
 - `.request.vars`: map containing the variables received in the request (both query and form).
 - `.request.url`: the url object. Can be used as per [the Go URL documentation.](https://golang.org/pkg/net/url/#URL)
 - `.request.headers` the headers object. Can be used as per [the Go http.Header documentation.](https://golang.org/pkg/net/http/#Header)
+
+## Lumberjack Output Reference
+
+Lumberjack is the protocol used between Elastic Beats and Logstash. It is
+implemented using the [elastic/go-lumber](https://github.com/elastic/go-lumber)
+library. `stream` sends data using version 2 of the Lumberjack protocol. Each
+log line is sent as its own batch containing a single event. The output blocks
+until the batch is ACKed.
+
+When using the Lumberjack output the address flag value (`--addr`) can indicate
+when to send via TLS. Format the address as a URL with a `tls` scheme
+(e.g. `tls://127.0.0.1:5044`) to use TLS. If a scheme isn't specified then a
+TCP connection is used (i.e. `localhost:5044` implies `tcp://localhost:5044`).
+
+By default, Lumberjack batches contain one event with a `message` field.
+
+```json
+[
+  {
+    "message": "{{ input_data }}"
+  }
+]
+```
+
+If `--lumberjack-parse-json` is used then the input data is parsed as JSON
+and the resulting data is sent as a batch.
