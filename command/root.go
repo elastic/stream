@@ -85,7 +85,7 @@ func ExecuteContext(ctx context.Context) error {
 	// GCS output flags.
 	rootCmd.PersistentFlags().StringVar(&opts.GcsOptions.Bucket, "gcs-bucket", "testbucket", "GCS Bucket name")
 	rootCmd.PersistentFlags().StringVar(&opts.GcsOptions.Object, "gcs-object", "testobject", "GCS Object name")
-	rootCmd.PersistentFlags().StringVar(&opts.GcsOptions.ProjectId, "gcs-projectid", "testproject", "GCS Project name")
+	rootCmd.PersistentFlags().StringVar(&opts.GcsOptions.ProjectID, "gcs-projectid", "testproject", "GCS Project name")
 
 	// Lumberjack output flags.
 	rootCmd.PersistentFlags().BoolVar(&opts.LumberjackOptions.ParseJSON, "lumberjack-parse-json", false, "Parse the input data as JSON and send the structured data as a Lumberjack batch.")

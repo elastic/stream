@@ -69,8 +69,8 @@ func (o *Output) Write(b []byte) (int, error) {
 func (o *Output) createBucket(ctx context.Context) error {
 	bkt := o.client.Bucket(o.opts.GcsOptions.Bucket)
 	_, err := bkt.Attrs(ctx)
-	if err == storage.ErrBucketNotExist {
-		err = bkt.Create(ctx, o.opts.GcsOptions.ProjectId, nil)
+	if errors.Is(err, storage.ErrBucketNotExist) {
+		err = bkt.Create(ctx, o.opts.GcsOptions.ProjectID, nil)
 		if err != nil {
 			return fmt.Errorf("failed to create Bucket: %w", err)
 		}
