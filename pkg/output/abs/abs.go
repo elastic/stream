@@ -8,8 +8,9 @@ import (
 	"errors"
 	"fmt"
 
-	"github.com/Azure/azure-sdk-for-go/sdk/storage/azblob"
 	"github.com/elastic/stream/pkg/output"
+
+	"github.com/Azure/azure-sdk-for-go/sdk/storage/azblob"
 )
 
 func init() {
@@ -32,8 +33,7 @@ func New(opts *output.Options) (output.Output, error) {
 }
 
 func (o *Output) DialContext(ctx context.Context) error {
-	err := o.createContainer(ctx)
-	if err != nil {
+	if err := o.createContainer(ctx); err != nil {
 		return err
 	}
 	return nil
