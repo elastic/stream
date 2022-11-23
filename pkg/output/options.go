@@ -20,6 +20,7 @@ type Options struct {
 	GCPPubsubOptions
 	KafkaOptions
 	LumberjackOptions
+	GcsOptions
 }
 
 type WebhookOptions struct {
@@ -42,4 +43,10 @@ type KafkaOptions struct {
 
 type LumberjackOptions struct {
 	ParseJSON bool // Parse the input bytes as JSON and send structured data. By default, input bytes are sent in a 'message' field.
+}
+
+type GcsOptions struct {
+	ProjectId string // Project ID, needs to be unique with multiple buckets of the same name.
+	Bucket    string // Bucket name. Will create it if do not exist.
+	Object    string // Name of the object created inside the related Bucket.
 }
