@@ -26,6 +26,7 @@ import (
 	"github.com/elastic/stream/pkg/output"
 
 	// Register outputs.
+	_ "github.com/elastic/stream/pkg/output/abs"
 	_ "github.com/elastic/stream/pkg/output/gcppubsub"
 	_ "github.com/elastic/stream/pkg/output/kafka"
 	_ "github.com/elastic/stream/pkg/output/lumberjack"

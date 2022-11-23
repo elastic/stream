@@ -19,6 +19,7 @@ type Options struct {
 	WebhookOptions
 	GCPPubsubOptions
 	KafkaOptions
+	ABSOptions
 	LumberjackOptions
 }
 
@@ -38,6 +39,12 @@ type GCPPubsubOptions struct {
 
 type KafkaOptions struct {
 	Topic string // Topic name. Will create it if not exists.
+}
+
+type ABSOptions struct {
+	Container string // Container name. Will create it if it does not exists.
+	Blob      string // Blob name to use, will be created inside the container.
+	Port      string // Need port number for tests, to update the connection string
 }
 
 type LumberjackOptions struct {
