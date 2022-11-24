@@ -116,6 +116,11 @@ func TestGcs(t *testing.T) {
 	// Need to close the Writer for the Object to be created in the Bucket.
 	out.Close()
 
+	// https://cloud.google.com/go/docs/reference/cloud.google.com/go/storage/latest#hdr-Creating_a_Client
+	// This is required to override the client to use localhost instead, has to be set before creating the client
+	os.Setenv("STORAGE_EMULATOR_HOST", emulatorHostAndPort)
+	defer os.Unsetenv("STORAGE_EMULATOR_HOST")
+
 	ctx, cancel := context.WithCancel(context.Background())
 	client, err := storage.NewClient(ctx)
 	require.NoError(t, err)
