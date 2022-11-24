@@ -26,6 +26,8 @@ func New(opts *output.Options) (output.Output, error) {
 	if opts.Addr == "" {
 		return nil, errors.New("azure blob storage address is required")
 	}
+	// A connection string is used for multiple reasons, its easier to bypass the URL endpoint, and the hardcoded credentials can easily be passed.
+	// These credentials are the defaults for the Azurite Emulator, which is why they can simply be hardcoded.
 	connectionString := fmt.Sprintf("DefaultEndpointsProtocol=http;AccountName=devstoreaccount1;AccountKey=Eby8vdM02xNOcqFlqUwJPLlmEtlCDXJ1OUzFT50uSRZ6IFsuFq2UVErCz4I6tq/K1SZFPTOtr/KBHBeksoGMGw==;BlobEndpoint=http://%s:%s/devstoreaccount1;", opts.Addr, opts.ABSOptions.Port)
 	serviceClient, _ := azblob.NewClientFromConnectionString(connectionString, nil)
 
@@ -39,7 +41,8 @@ func (o *Output) DialContext(ctx context.Context) error {
 	return nil
 }
 
-func (o *Output) Close() error {
+// There is nothing to close here, the client does not have any close functionality
+func (*Output) Close() error {
 	return nil
 }
 
