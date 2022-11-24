@@ -116,8 +116,6 @@ func TestGcs(t *testing.T) {
 	// Need to close the Writer for the Object to be created in the Bucket.
 	out.Close()
 
-	os.Setenv("STORAGE_EMULATOR_HOST", emulatorHostAndPort)
-
 	ctx, cancel := context.WithCancel(context.Background())
 	client, err := storage.NewClient(ctx)
 	require.NoError(t, err)

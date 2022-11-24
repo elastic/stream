@@ -29,8 +29,10 @@ func New(opts *output.Options) (output.Output, error) {
 	if opts.Addr == "" {
 		return nil, errors.New("google cloud address is required")
 	}
-
+	// https://cloud.google.com/go/docs/reference/cloud.google.com/go/storage/latest#hdr-Creating_a_Client
+	// This is required to override the client to use localhost instead, has to be set before creating the client
 	os.Setenv("STORAGE_EMULATOR_HOST", opts.Addr)
+	defer os.Unsetenv("STORAGE_EMULATOR_HOST")
 
 	ctx, cancel := context.WithCancel(context.Background())
 	gcsClient, err := storage.NewClient(ctx)
@@ -52,8 +54,12 @@ func (o *Output) DialContext(ctx context.Context) error {
 }
 
 func (o *Output) Close() error {
-	o.writer.Close()
-	o.client.Close()
+	if err := o.writer.Close(); err != nil {
+		return err
+	}
+	if err := o.client.Close(); err != nil {
+		return err
+	}
 	o.cancelFunc()
 	return nil
 }
