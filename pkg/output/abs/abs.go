@@ -41,7 +41,7 @@ func (o *Output) DialContext(ctx context.Context) error {
 	return nil
 }
 
-// There is nothing to close here, the client does not have any close functionality
+// Close is not needed as there is no client to close
 func (*Output) Close() error {
 	return nil
 }
