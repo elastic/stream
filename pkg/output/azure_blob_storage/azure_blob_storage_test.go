@@ -2,7 +2,7 @@
 // Elasticsearch B.V. licenses this file to you under the Apache 2.0 License.
 // See the LICENSE file in the project root for more information.
 
-package abs
+package azure_blob_storage
 
 import (
 	"context"
@@ -81,10 +81,10 @@ func TestMain(m *testing.M) {
 	os.Exit(code)
 }
 
-func TestABS(t *testing.T) {
+func TestAzureBlobStorage(t *testing.T) {
 	out, err := New(&output.Options{
 		Addr: emulatorHost,
-		ABSOptions: output.ABSOptions{
+		AzureBlobStorageOptions: output.AzureBlobStorageOptions{
 			Container: container,
 			Blob:      blob,
 			Port:      emulatorPort,
