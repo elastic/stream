@@ -12,6 +12,12 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 
 ### Removed
 
+## [0.9.0]
+
+### Added
+
+- Added support for azure blob storage output: [#46](https://github.com/elastic/stream/pull/46)
+
 ## [0.8.0]
 
 ### Added
