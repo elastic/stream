@@ -1,10 +1,11 @@
 module github.com/elastic/stream
 
-go 1.18
+go 1.19
 
 require (
 	cloud.google.com/go/pubsub v1.25.1
 	cloud.google.com/go/storage v1.28.0
+	github.com/Azure/azure-sdk-for-go/sdk/storage/azblob v0.5.1
 	github.com/Shopify/sarama v1.36.0
 	github.com/elastic/go-concert v0.2.0
 	github.com/elastic/go-lumber v0.1.2-0.20220819171948-335fde24ea0f
@@ -28,6 +29,10 @@ require (
 	cloud.google.com/go/compute v1.12.1 // indirect
 	cloud.google.com/go/compute/metadata v0.2.1 // indirect
 	cloud.google.com/go/iam v0.5.0 // indirect
+	cloud.google.com/go/compute v1.9.0 // indirect
+	cloud.google.com/go/iam v0.4.0 // indirect
+	github.com/Azure/azure-sdk-for-go/sdk/azcore v1.1.4 // indirect
+	github.com/Azure/azure-sdk-for-go/sdk/internal v1.0.1 // indirect
 	github.com/Azure/go-ansiterm v0.0.0-20210617225240-d185dfc1b5a1 // indirect
 	github.com/Microsoft/go-winio v0.5.2 // indirect
 	github.com/Nvveen/Gotty v0.0.0-20120604004816-cd527374f1e5 // indirect
