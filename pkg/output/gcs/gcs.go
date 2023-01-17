@@ -7,9 +7,10 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"os"
+	"net/url"
 
 	"cloud.google.com/go/storage"
+	"google.golang.org/api/option"
 
 	"github.com/elastic/stream/pkg/output"
 )
@@ -26,19 +27,9 @@ type Output struct {
 }
 
 func New(opts *output.Options) (output.Output, error) {
-	if opts.Addr == "" {
-		return nil, errors.New("google cloud address is required")
-	}
-	// https://cloud.google.com/go/docs/reference/cloud.google.com/go/storage/latest#hdr-Creating_a_Client
-	// This is required to override the client to use localhost instead, has to be set before creating the client
-	os.Setenv("STORAGE_EMULATOR_HOST", opts.Addr)
-	defer os.Unsetenv("STORAGE_EMULATOR_HOST")
-
-	ctx, cancel := context.WithCancel(context.Background())
-	gcsClient, err := storage.NewClient(ctx)
+	gcsClient, ctx, cancel, err := NewClient(opts.Addr)
 	if err != nil {
-		cancel()
-		return nil, fmt.Errorf("failed to create gcs client: %w", err)
+		return nil, err
 	}
 	obj := gcsClient.Bucket(opts.GcsOptions.Bucket).Object(opts.GcsOptions.Object)
 	writer := obj.NewWriter(ctx)
@@ -83,4 +74,25 @@ func (o *Output) createBucket(ctx context.Context) error {
 		return nil
 	}
 	return nil
+}
+
+func NewClient(addr string) (gcsClient *storage.Client, ctx context.Context, cancel context.CancelFunc, err error) {
+	ctx, cancel = context.WithCancel(context.Background())
+	var h *url.URL
+	if addr != "" {
+		h, err = url.Parse(addr)
+		if err != nil {
+			return nil, nil, nil, err
+		}
+		h.Path = "storage/v1/"
+		gcsClient, err = storage.NewClient(ctx, option.WithEndpoint(h.String()), option.WithoutAuthentication())
+	} else {
+		gcsClient, err = storage.NewClient(ctx)
+	}
+	if err != nil {
+		cancel()
+		return nil, nil, nil, fmt.Errorf("failed to create gcs client: %w", err)
+	}
+
+	return gcsClient, ctx, cancel, nil
 }

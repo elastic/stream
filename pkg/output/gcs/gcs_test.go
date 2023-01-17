@@ -15,7 +15,6 @@ import (
 	"os"
 	"testing"
 
-	"cloud.google.com/go/storage"
 	"github.com/ory/dockertest/v3"
 	"github.com/ory/dockertest/v3/docker"
 	"github.com/stretchr/testify/require"
@@ -73,7 +72,6 @@ func TestMain(m *testing.M) {
 		if err != nil {
 			return err
 		}
-		fmt.Println(resp.StatusCode)
 		if resp.StatusCode != http.StatusOK {
 			return fmt.Errorf("unexpected status code: %v", resp.StatusCode)
 		}
@@ -116,18 +114,12 @@ func TestGcs(t *testing.T) {
 	// Need to close the Writer for the Object to be created in the Bucket.
 	out.Close()
 
-	// https://cloud.google.com/go/docs/reference/cloud.google.com/go/storage/latest#hdr-Creating_a_Client
-	// This is required to override the client to use localhost instead, has to be set before creating the client
-	os.Setenv("STORAGE_EMULATOR_HOST", emulatorHostAndPort)
-	defer os.Unsetenv("STORAGE_EMULATOR_HOST")
-
-	ctx, cancel := context.WithCancel(context.Background())
-	client, err := storage.NewClient(ctx)
+	gcsClient, ctx, cancel, err := NewClient(emulatorHostAndPort)
 	require.NoError(t, err)
-	t.Cleanup(func() { _ = client.Close() })
+	t.Cleanup(func() { _ = gcsClient.Close() })
 	t.Cleanup(cancel)
 
-	o := client.Bucket(bucket).Object(objectname)
+	o := gcsClient.Bucket(bucket).Object(objectname)
 	r, err := o.NewReader(ctx)
 	require.NoError(t, err)
 
