@@ -16,6 +16,7 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 
 ### Added
 
+- Add GCS output support: [#46](https://github.com/elastic/stream/pull/46)
 - Added support for azure blob storage output: [#46](https://github.com/elastic/stream/pull/46)
 
 ## [0.8.0]

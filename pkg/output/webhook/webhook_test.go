@@ -7,7 +7,7 @@ package webhook
 import (
 	"context"
 	"encoding/json"
-	"io/ioutil"
+	"io"
 	"net/http"
 	"net/http/httptest"
 	"testing"
@@ -37,7 +37,7 @@ func TestWebhook(t *testing.T) {
 		if r.Method == http.MethodPost {
 			assert.Equal(t, contentType, r.Header.Get("Content-Type"))
 
-			data, err := ioutil.ReadAll(r.Body)
+			data, err := io.ReadAll(r.Body)
 			require.NoError(t, err)
 
 			var event map[string]string

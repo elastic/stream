@@ -12,6 +12,8 @@ stream is a test utility for streaming data via:
 - Kafka
 - [Lumberjack](#lumberjack-output-reference)
 - HTTP Mock Server
+- Azure Blob Storage
+- Google Cloud Storage
 
 Input data can be read from:
 
@@ -113,3 +115,16 @@ By default, Lumberjack batches contain one event with a `message` field.
 
 If `--lumberjack-parse-json` is used then the input data is parsed as JSON
 and the resulting data is sent as a batch.
+
+## GCS Output Reference
+
+The GCS output is used to collect data from the configured source, create a GCS bucket, and populate it with the incoming data.
+When specifying a (`--addr`) which should be a combination of both host and port, usually pointing to a locally running emulator,
+the client will be overriding the configured API endpoint, which defaults to the public google storage API, towards the emulator instead.
+The emulator does not require authentication.
+
+### Options
+
+- `gcs-bucket`: The name of the GCS bucket that should be created, should not already exist.
+- `gcs-object`: The name of the GCS object that will be populated with the collected data, using the configured GCS bucket.
+- `gcs-projectid`: The related projectID used when creating the bucket, this is required to be changed from the default value when not using an emulator.
