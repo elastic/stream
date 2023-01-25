@@ -5,7 +5,7 @@ go 1.19
 require (
 	cloud.google.com/go/pubsub v1.25.1
 	cloud.google.com/go/storage v1.28.0
-	github.com/Azure/azure-sdk-for-go/sdk/storage/azblob v0.5.1
+	github.com/Azure/azure-sdk-for-go/sdk/storage/azblob v0.6.1
 	github.com/Shopify/sarama v1.36.0
 	github.com/elastic/go-concert v0.2.0
 	github.com/elastic/go-lumber v0.1.2-0.20220819171948-335fde24ea0f

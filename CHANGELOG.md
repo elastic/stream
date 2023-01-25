@@ -12,6 +12,12 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 
 ### Removed
 
+## [0.9.1]
+
+### Changed
+
+- Modified azureblobstorage output to use correct content type header: [#50](https://github.com/elastic/stream/pull/50)
+
 ## [0.9.0]
 
 ### Added
