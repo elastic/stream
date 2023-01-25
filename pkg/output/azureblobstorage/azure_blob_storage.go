@@ -11,6 +11,7 @@ import (
 	"github.com/elastic/stream/pkg/output"
 
 	"github.com/Azure/azure-sdk-for-go/sdk/storage/azblob"
+	blobalias "github.com/Azure/azure-sdk-for-go/sdk/storage/azblob/blob"
 )
 
 func init() {
@@ -47,7 +48,13 @@ func (*Output) Close() error {
 }
 
 func (o *Output) Write(b []byte) (int, error) {
-	_, err := o.client.UploadBuffer(context.Background(), o.opts.AzureBlobStorageOptions.Container, o.opts.AzureBlobStorageOptions.Blob, b, nil)
+	cType := "application/json"
+	options := azblob.UploadBufferOptions{
+		HTTPHeaders: &blobalias.HTTPHeaders{
+			BlobContentType: &cType,
+		},
+	}
+	_, err := o.client.UploadBuffer(context.Background(), o.opts.AzureBlobStorageOptions.Container, o.opts.AzureBlobStorageOptions.Blob, b, &options)
 	if err != nil {
 		return 0, fmt.Errorf("failed to upload file to blob: %w", err)
 	}
