@@ -53,7 +53,8 @@ type LumberjackOptions struct {
 }
 
 type GcsOptions struct {
-	ProjectID string // Project ID, needs to be unique with multiple buckets of the same name.
-	Bucket    string // Bucket name. Will create it if do not exist.
-	Object    string // Name of the object created inside the related Bucket.
+	ProjectID         string // Project ID, needs to be unique with multiple buckets of the same name.
+	ObjectContentType string // The content-type set for the object that is created in the bucket, defaults to application/json
+	Bucket            string // Bucket name. Will create it if do not exist.
+	Object            string // Name of the object created inside the related Bucket.
 }

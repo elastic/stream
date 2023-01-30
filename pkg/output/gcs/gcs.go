@@ -33,6 +33,8 @@ func New(opts *output.Options) (output.Output, error) {
 	}
 	obj := gcsClient.Bucket(opts.GcsOptions.Bucket).Object(opts.GcsOptions.Object)
 	writer := obj.NewWriter(ctx)
+	// System tests are failing because a default content type is not set automatically, so we set it here instead.
+	writer.ObjectAttrs.ContentType = opts.GcsOptions.ObjectContentType
 
 	return &Output{opts: opts, client: gcsClient, cancelFunc: cancel, writer: writer}, nil
 }
