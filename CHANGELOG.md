@@ -12,6 +12,12 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 
 ### Removed
 
+## [0.10.0]
+
+### Added
+
+- Added content type support to GCS output: [#51](https://github.com/elastic/stream/pull/51)
+
 ## [0.9.1]
 
 ### Changed
