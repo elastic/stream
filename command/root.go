@@ -91,7 +91,7 @@ func ExecuteContext(ctx context.Context) error {
 	// GCS output flags.
 	rootCmd.PersistentFlags().StringVar(&opts.GcsOptions.Bucket, "gcs-bucket", "testbucket", "GCS Bucket name")
 	rootCmd.PersistentFlags().StringVar(&opts.GcsOptions.Object, "gcs-object", "testobject", "GCS Object name")
-	rootCmd.PersistentFlags().StringVar(&opts.GcsOptions.Object, "gcs-content-type", "application/json", "The Content type of the object to be uploaded to GCS.")
+	rootCmd.PersistentFlags().StringVar(&opts.GcsOptions.ObjectContentType, "gcs-content-type", "application/json", "The Content type of the object to be uploaded to GCS.")
 	rootCmd.PersistentFlags().StringVar(&opts.GcsOptions.ProjectID, "gcs-projectid", "testproject", "GCS Project name")
 
 	// Lumberjack output flags.
