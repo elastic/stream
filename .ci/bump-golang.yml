@@ -26,21 +26,10 @@ actions:
       title: '[Automation] Bump Golang version to {{ source "latestGoVersion" }}'
 
 sources:
-  minor:
-    name: Get minor version in .go-version
-    kind: shell
-    transformers:
-      - findsubmatch:
-          pattern: '^\d+.(\d+).\d+$'
-          captureindex: 1
-    spec:
-      command: cat .go-version
 
   latestGoVersion:
     name: Get Latest Go Release
     kind: githubrelease
-    dependson:
-      - minor
     transformers:
       - trimprefix: go
     spec:
@@ -50,7 +39,7 @@ sources:
       username: '{{ requiredEnv "GIT_USER" }}'
       versionfilter:
         kind: regex
-        pattern: go1\.{{ source "minor" }}\.(\d*)$
+        pattern: go1\.(\d+)(\.(\d+))?$
 
   gomod:
     dependson:
@@ -59,7 +48,7 @@ sources:
     kind: shell
     transformers:
       - findsubmatch:
-          pattern: '^(\d+.\d+).\d+'
+          pattern: '^(\d+.\d+)(.\d+)?'
           captureindex: 1
     spec:
       command: echo {{ source "latestGoVersion" }}
