@@ -27,6 +27,7 @@ import (
 
 	// Register outputs.
 	_ "github.com/elastic/stream/pkg/output/azureblobstorage"
+	_ "github.com/elastic/stream/pkg/output/azureeventhub"
 	_ "github.com/elastic/stream/pkg/output/gcppubsub"
 	_ "github.com/elastic/stream/pkg/output/gcs"
 	_ "github.com/elastic/stream/pkg/output/kafka"
@@ -80,10 +81,14 @@ func ExecuteContext(ctx context.Context) error {
 	rootCmd.PersistentFlags().StringVar(&opts.GCPPubsubOptions.Subscription, "gcppubsub-subscription", "subscription", "GCP Pubsub subscription name")
 	rootCmd.PersistentFlags().BoolVar(&opts.GCPPubsubOptions.Clear, "gcppubsub-clear", true, "GCP Pubsub clear flag")
 
-	// GCS output flags.
+	// AzureBlobStorage output flags.
 	rootCmd.PersistentFlags().StringVar(&opts.AzureBlobStorageOptions.Container, "azure-blob-storage-container", "testcontainer", "Azure Blob Storage container name")
 	rootCmd.PersistentFlags().StringVar(&opts.AzureBlobStorageOptions.Blob, "azure-blob-storage-blob", "testblob", "Azure Blob Storage blob name")
 	rootCmd.PersistentFlags().StringVar(&opts.AzureBlobStorageOptions.Port, "azure-blob-storage-port", "10000", "HTTP port used to connect to the blob storage, used for emulators and CI")
+
+	// AzureEventHub output flags.
+	rootCmd.PersistentFlags().StringVar(&opts.AzureEventHubOptions.FullyQualifiedNamespace, "azure-event-hub-fully-qualified-namespace", "myeventhub.servicebus.windows.net", "Azure Eventhub namespace")
+	rootCmd.PersistentFlags().StringVar(&opts.AzureEventHubOptions.EventHubName, "azure-event-hub-eventhubname", "testeventhub", "Azure Eventhub name")
 
 	// Kafka Pubsub output flags.
 	rootCmd.PersistentFlags().StringVar(&opts.KafkaOptions.Topic, "kafka-topic", "test", "Kafka topic name")
