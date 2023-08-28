@@ -23,21 +23,35 @@ type Output struct {
 }
 
 func New(opts *output.Options) (output.Output, error) {
-	// Credentials set as env variables - https://github.com/Azure/azure-sdk-for-go/blob/6b6f76ebe0d2334c83e8b6f89af4fe9d0b1ce631/sdk/azidentity/README.md?plain=1#L156-L187
-	defaultAzureCred, err := azidentity.NewDefaultAzureCredential(nil)
-	if err != nil {
-		return nil, fmt.Errorf("missing azure credentials in the environment variables : %w", err)
-	}
 
-	producerClient, err := azeventhubs.NewProducerClient(opts.AzureEventHubOptions.FullyQualifiedNamespace, opts.AzureEventHubOptions.EventHubName, defaultAzureCred, nil)
-	if err != nil {
-		return nil, fmt.Errorf("error while creating new eventhub producer client : %w", err)
+	var producerClient *azeventhubs.ProducerClient
+	var err error
+
+	if opts.AzureEventHubOptions.ConnectionString != "" {
+		producerClient, err = azeventhubs.NewProducerClientFromConnectionString(opts.AzureEventHubOptions.ConnectionString, opts.AzureEventHubOptions.EventHubName, nil)
+		if err != nil {
+			return nil, fmt.Errorf("error while creating new eventhub producer client from connectionstring : %w", err)
+		}
+	} else {
+		fmt.Print("no connectionstring was provided, falling back to default credentials or environment variable")
+
+		// Credentials set as env variables - https://github.com/Azure/azure-sdk-for-go/blob/6b6f76ebe0d2334c83e8b6f89af4fe9d0b1ce631/sdk/azidentity/README.md?plain=1#L156-L187
+		defaultAzureCred, err := azidentity.NewDefaultAzureCredential(nil)
+		if err != nil {
+			return nil, fmt.Errorf("missing azure credentials in the environment variables : %w", err)
+		}
+
+		producerClient, err = azeventhubs.NewProducerClient(opts.AzureEventHubOptions.FullyQualifiedNamespace, opts.AzureEventHubOptions.EventHubName, defaultAzureCred, nil)
+		if err != nil {
+			return nil, fmt.Errorf("error while creating new eventhub producer client : %w", err)
+		}
 	}
 
 	return &Output{opts: opts, producerClient: producerClient}, nil
 }
 
 func (o *Output) DialContext(ctx context.Context) error {
+
 	return nil
 }
 
