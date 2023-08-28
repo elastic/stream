@@ -13,6 +13,7 @@ import (
 	"github.com/stretchr/testify/require"
 
 	"github.com/elastic/go-lumber/server"
+
 	"github.com/elastic/stream/pkg/output"
 )
 

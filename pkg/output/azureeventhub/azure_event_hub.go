@@ -23,7 +23,6 @@ type Output struct {
 }
 
 func New(opts *output.Options) (output.Output, error) {
-
 	var producerClient *azeventhubs.ProducerClient
 	var err error
 
@@ -50,8 +49,7 @@ func New(opts *output.Options) (output.Output, error) {
 	return &Output{opts: opts, producerClient: producerClient}, nil
 }
 
-func (o *Output) DialContext(ctx context.Context) error {
-
+func (*Output) DialContext(_ context.Context) error {
 	return nil
 }
 
