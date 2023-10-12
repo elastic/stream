@@ -12,6 +12,12 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 
 ### Removed
 
+## [0.11.0]
+
+### Added
+
+- Added ability to specify disallowed parameters: [#59](https://github.com/elastic/stream/pull/59)
+
 ## [0.10.0]
 
 ### Added
