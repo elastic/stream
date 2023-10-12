@@ -20,6 +20,8 @@ func init() {
 type Output struct {
 	opts           *output.Options
 	producerClient *azeventhubs.ProducerClient
+	cancelFunc     context.CancelFunc
+	cancelCtx      context.Context
 }
 
 func New(opts *output.Options) (output.Output, error) {
@@ -45,8 +47,8 @@ func New(opts *output.Options) (output.Output, error) {
 			return nil, fmt.Errorf("error while creating new eventhub producer client : %w", err)
 		}
 	}
-
-	return &Output{opts: opts, producerClient: producerClient}, nil
+	ctx, cancel := context.WithCancel(context.Background())
+	return &Output{opts: opts, producerClient: producerClient, cancelFunc: cancel, cancelCtx: ctx}, nil
 }
 
 func (*Output) DialContext(_ context.Context) error {
@@ -54,12 +56,13 @@ func (*Output) DialContext(_ context.Context) error {
 }
 
 func (o *Output) Close() error {
-	o.producerClient.Close(context.TODO())
+	o.producerClient.Close(o.cancelCtx)
+	o.cancelFunc()
 	return nil
 }
 
 func (o *Output) Write(b []byte) (int, error) {
-	batch, err := o.producerClient.NewEventDataBatch(context.TODO(), nil)
+	batch, err := o.producerClient.NewEventDataBatch(o.cancelCtx, nil)
 	if err != nil {
 		return 0, fmt.Errorf("error while creating new event data batch : %w", err)
 	}
