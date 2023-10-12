@@ -30,6 +30,7 @@ func TestHTTPServer(t *testing.T) {
       password: passwd
       query_params:
         p1: ["v1"]
+        p2: null
       request_headers:
         accept: ["application/json"]
 
@@ -123,5 +124,22 @@ func TestHTTPServer(t *testing.T) {
 
 		assert.JSONEq(t, "2", string(body))
 		assert.Equal(t, "text/plain", resp.Header.Get("content-type"))
+	})
+
+	t.Run("request has rejected parameter", func(t *testing.T) {
+		req, err := http.NewRequest("GET", "http://"+addr+"/path1/test?p1=v1&p2=bad", nil)
+		require.NoError(t, err)
+
+		resp, err := http.DefaultClient.Do(req)
+		require.NoError(t, err)
+		resp.Body.Close()
+
+		assert.Equal(t, 404, resp.StatusCode) // must fail because p2 is present
+
+		body, err := ioutil.ReadAll(resp.Body)
+		require.NoError(t, err)
+		resp.Body.Close()
+
+		assert.Equal(t, []byte{}, body)
 	})
 }
