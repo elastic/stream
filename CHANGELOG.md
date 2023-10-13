@@ -12,11 +12,17 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 
 ### Removed
 
-## [0.11.0]
+## [0.12.0]
 
 ### Added
 
 - Added support for azure eventhub output: [#58](https://github.com/elastic/stream/pull/58)
+
+## [0.11.0]
+
+### Added
+
+- Added ability to specify disallowed parameters: [#59](https://github.com/elastic/stream/pull/59)
 
 ## [0.10.0]
 
