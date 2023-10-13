@@ -141,7 +141,7 @@ Sample config:
 version: '2.3'
 services:
   azure-event-hub:
-    image: docker.elastic.co/observability/stream:v0.10.0
+    image: docker.elastic.co/observability/stream:v0.12.0
     volumes:
       - ./sample_logs:/sample_logs:ro
     command:
@@ -154,6 +154,6 @@ services:
 
 ### Options
 
-- `ConnectionString`: The connection string to connect to the Event Hub
-- `FullyQualifiedNamespace`: The FullyQualifiedNamespace is the Event Hubs namespace name (ex: myeventhub.servicebus.windows.net)
-- `EventHubName`: The name of the Event hub
+- `azure-event-hub-connection-string`: The connection string to connect to the Event Hub
+- `azure-event-hub-namespace`: The FullyQualifiedNamespace is the Event Hubs namespace name (ex: myeventhub.servicebus.windows.net)
+- `azure-event-hub-name`: The name of the Event hub
