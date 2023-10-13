@@ -14,6 +14,7 @@ stream is a test utility for streaming data via:
 - HTTP Mock Server
 - Azure Blob Storage
 - Google Cloud Storage
+- Azure Event Hub
 
 Input data can be read from:
 
@@ -128,3 +129,31 @@ The emulator does not require authentication.
 - `gcs-bucket`: The name of the GCS bucket that should be created, should not already exist.
 - `gcs-object`: The name of the GCS object that will be populated with the collected data, using the configured GCS bucket.
 - `gcs-projectid`: The related projectID used when creating the bucket, this is required to be changed from the default value when not using an emulator.
+
+## Azure Event Hub Output Reference
+
+The Azure Event Hub output is used to collect data from the azure event hub resource
+When specifying a (`--azure-event-hub-connection-string`) , it should be retrieved as mentioned [here](https://learn.microsoft.com/en-us/azure/event-hubs/event-hubs-get-connection-string).
+
+Sample config:
+
+```yml
+version: '2.3'
+services:
+  azure-event-hub:
+    image: docker.elastic.co/observability/stream:v0.10.0
+    volumes:
+      - ./sample_logs:/sample_logs:ro
+    command:
+      - log
+      - --retry=30
+      - -p=azureeventhub
+      - --azure-event-hub-connection-string="Endpoint=sb://test-eventhub-stream-seis.servicebus.windows.net/;SharedAccessKeyName=RootManageSharedAccessKey;SharedAccessKey=SharedAccessKey"
+      - /sample_logs/testdata.log
+```
+
+### Options
+
+- `ConnectionString`: The connection string to connect to the Event Hub
+- `FullyQualifiedNamespace`: The FullyQualifiedNamespace is the Event Hubs namespace name (ex: myeventhub.servicebus.windows.net)
+- `EventHubName`: The name of the Event hub
