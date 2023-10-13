@@ -71,7 +71,7 @@ The rules will be defined in order, and will only match if all criteria is true 
 - `path`: the path to match. It can use [gorilla/mux](https://pkg.go.dev/github.com/gorilla/mux#pkg-overview) parameters patterns.
 - `methods`: a list of methods to match with the rule.
 - `user` and `password`: username and password for basic auth matching.
-- `query_params`: Key-Value definitions of the query parameters to match. It can use [gorilla/mux](https://pkg.go.dev/github.com/gorilla/mux#Route.Queries) parameters patterns for the values. Web form params will also be added and compared against this for simplicity.
+- `query_params`: Key-Value definitions of the query parameters to match. It can use [gorilla/mux](https://pkg.go.dev/github.com/gorilla/mux#Route.Queries) parameters patterns for the values. Web form params will also be added and compared against this for simplicity. If a key is given an empty value, requests with this parameter will not satisfy the rule.
 - `request_headers`: Key-Value definitions of the headers to match. Any headers outside of this list will be ignored. The matches can be defined [as regular expressions](https://pkg.go.dev/github.com/gorilla/mux#Route.HeadersRegexp).
 - `request_body`: a string defining the expected body to match for the request. If the string is quoted with slashes, the leading and trailing slash are stripped and the resulting string is interpreted as a regular expression.
 - `responses`: a list of zero or more responses to return on matches. If more than one are set, they will be returned in rolling sequence.

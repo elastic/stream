@@ -160,11 +160,24 @@ func newHandlerFromConfig(config *config, logger *zap.SugaredLogger) (http.Handl
 
 		route.Methods(rule.Methods...)
 
+		exclude := make(map[string]bool)
 		for key, vals := range rule.QueryParams {
+			if len(vals) == 0 { // Cannot use nil since ucfg interprets null as an empty slice instead of nil.
+				exclude[key] = true
+				continue
+			}
 			for _, v := range vals {
 				route.Queries(key, v)
 			}
 		}
+		route.MatcherFunc(func(r *http.Request, rm *mux.RouteMatch) bool {
+			for key := range exclude {
+				if r.URL.Query().Has(key) {
+					return false
+				}
+			}
+			return true
+		})
 
 		for key, vals := range rule.RequestHeaders {
 			for _, v := range vals {
