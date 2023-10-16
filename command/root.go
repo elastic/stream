@@ -81,12 +81,12 @@ func ExecuteContext(ctx context.Context) error {
 	rootCmd.PersistentFlags().StringVar(&opts.GCPPubsubOptions.Subscription, "gcppubsub-subscription", "subscription", "GCP Pubsub subscription name")
 	rootCmd.PersistentFlags().BoolVar(&opts.GCPPubsubOptions.Clear, "gcppubsub-clear", true, "GCP Pubsub clear flag")
 
-	// AzureBlobStorage output flags.
+	// Azure BlobStorage output flags.
 	rootCmd.PersistentFlags().StringVar(&opts.AzureBlobStorageOptions.Container, "azure-blob-storage-container", "testcontainer", "Azure Blob Storage container name")
 	rootCmd.PersistentFlags().StringVar(&opts.AzureBlobStorageOptions.Blob, "azure-blob-storage-blob", "testblob", "Azure Blob Storage blob name")
 	rootCmd.PersistentFlags().StringVar(&opts.AzureBlobStorageOptions.Port, "azure-blob-storage-port", "10000", "HTTP port used to connect to the blob storage, used for emulators and CI")
 
-	// AzureEventHub output flags.
+	// Azure EventHub output flags.
 	rootCmd.PersistentFlags().StringVar(&opts.AzureEventHubOptions.FullyQualifiedNamespace, "azure-event-hub-namespace", "myeventhub.servicebus.windows.net", "Azure Eventhub namespace")
 	rootCmd.PersistentFlags().StringVar(&opts.AzureEventHubOptions.EventHubName, "azure-event-hub-name", "test-eventhub-seis", "Azure Eventhub name")
 	rootCmd.PersistentFlags().StringVar(&opts.AzureEventHubOptions.ConnectionString, "azure-event-hub-connection-string", "connectionstring", "Azure Eventhub connection string")

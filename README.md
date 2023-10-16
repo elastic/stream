@@ -133,7 +133,7 @@ The emulator does not require authentication.
 ## Azure Event Hub Output Reference
 
 The Azure Event Hub output is used to collect data from the azure event hub resource
-When specifying a (`--azure-event-hub-connection-string`) , it should be retrieved as mentioned [here](https://learn.microsoft.com/en-us/azure/event-hubs/event-hubs-get-connection-string).
+When specifying a `--azure-event-hub-connection-string`, it should be retrieved as described [here](https://learn.microsoft.com/en-us/azure/event-hubs/event-hubs-get-connection-string).
 
 Sample config:
 
@@ -154,6 +154,6 @@ services:
 
 ### Options
 
-- `azure-event-hub-connection-string`: The connection string to connect to the Event Hub
-- `azure-event-hub-namespace`: The FullyQualifiedNamespace is the Event Hubs namespace name (ex: myeventhub.servicebus.windows.net)
-- `azure-event-hub-name`: The name of the Event hub
+- `azure-event-hub-connection-string`: The connection string to connect to the Event Hub.
+- `azure-event-hub-namespace`: The fully qualified domain name of the Event Hubs namespace. This it the Event Hubs namespace followed by `servicebus.windows.net` (e.g. myeventhub.servicebus.windows.net).
+- `azure-event-hub-name`: The name of the Event hub.
