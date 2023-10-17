@@ -20,6 +20,7 @@ type Options struct {
 	GCPPubsubOptions
 	KafkaOptions
 	AzureBlobStorageOptions
+	AzureEventHubOptions
 	LumberjackOptions
 	GcsOptions
 }
@@ -46,6 +47,12 @@ type AzureBlobStorageOptions struct {
 	Container string // Container name. Will create it if it does not exists.
 	Blob      string // Blob name to use, will be created inside the container.
 	Port      string // Need port number for tests, to update the connection string
+}
+
+type AzureEventHubOptions struct {
+	FullyQualifiedNamespace string // The FullyQualifiedNamespace is the Event Hubs namespace name (ex: myeventhub.servicebus.windows.net)
+	EventHubName            string // The name of the Event hub
+	ConnectionString        string // The connection string to connect to the Event Hub
 }
 
 type LumberjackOptions struct {
