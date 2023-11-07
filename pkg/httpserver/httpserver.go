@@ -31,11 +31,12 @@ type Server struct {
 
 type Options struct {
 	*output.Options
-	TLSCertificate string        // TLS certificate file path.
-	TLSKey         string        // TLS key file path.
-	ReadTimeout    time.Duration // HTTP Server read timeout.
-	WriteTimeout   time.Duration // HTTP Server write timeout.
-	ConfigPath     string        // Config path.
+	TLSCertificate      string        // TLS certificate file path.
+	TLSKey              string        // TLS key file path.
+	ReadTimeout         time.Duration // HTTP Server read timeout.
+	WriteTimeout        time.Duration // HTTP Server write timeout.
+	ConfigPath          string        // Config path.
+	ExitOnUnmatchedRule bool          // If true it will exit if a request does not match any rule.
 }
 
 func New(opts *Options, logger *zap.SugaredLogger) (*Server, error) {
@@ -53,7 +54,15 @@ func New(opts *Options, logger *zap.SugaredLogger) (*Server, error) {
 		return nil, err
 	}
 
-	handler, err := newHandlerFromConfig(config, logger)
+	notFoundHandler := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		logger.Debugf("request did not match with any rule: %s", strRequest(r))
+		w.WriteHeader(404)
+		if opts.ExitOnUnmatchedRule {
+			logger.Fatalf("--exit-on-unmatched-rule is set, exiting")
+		}
+	})
+
+	handler, err := newHandlerFromConfig(config, notFoundHandler, logger)
 	if err != nil {
 		return nil, err
 	}
@@ -104,7 +113,7 @@ func (o *Server) Close() error {
 	return o.server.Shutdown(ctx)
 }
 
-func newHandlerFromConfig(config *config, logger *zap.SugaredLogger) (http.Handler, error) {
+func newHandlerFromConfig(config *config, notFoundHandler http.HandlerFunc, logger *zap.SugaredLogger) (http.Handler, error) {
 	router := mux.NewRouter()
 
 	var buf bytes.Buffer
@@ -221,10 +230,7 @@ func newHandlerFromConfig(config *config, logger *zap.SugaredLogger) (http.Handl
 		})
 	}
 
-	router.NotFoundHandler = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		logger.Debugf("request did not match with any rule: %s", strRequest(r))
-		w.WriteHeader(404)
-	})
+	router.NotFoundHandler = notFoundHandler
 
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		// merge together form params into the url ones to make checks easier

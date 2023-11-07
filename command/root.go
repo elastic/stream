@@ -114,6 +114,7 @@ func ExecuteContext(ctx context.Context) error {
 	httpCommand.PersistentFlags().StringVar(&httpOpts.TLSCertificate, "tls-cert", "", "Path to the TLS certificate")
 	httpCommand.PersistentFlags().StringVar(&httpOpts.TLSKey, "tls-key", "", "Path to the TLS key file")
 	httpCommand.PersistentFlags().StringVar(&httpOpts.ConfigPath, "config", "", "Path to the config file")
+	httpCommand.PersistentFlags().BoolVar(&httpOpts.ExitOnUnmatchedRule, "exit-on-unmatched-rule", false, "If set to true it will exit if no rule matches a request")
 	rootCmd.AddCommand(httpCommand)
 
 	rootCmd.AddCommand(versionCmd)
