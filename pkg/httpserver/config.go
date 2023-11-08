@@ -14,7 +14,8 @@ import (
 )
 
 type config struct {
-	Rules []rule `config:"rules"`
+	AsSequence bool   `config:"as_sequence"`
+	Rules      []rule `config:"rules"`
 }
 
 type rule struct {

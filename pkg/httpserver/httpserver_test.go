@@ -5,8 +5,10 @@
 package httpserver
 
 import (
+	"bytes"
 	"context"
 	"fmt"
+	"io"
 	"io/ioutil"
 	"net"
 	"net/http"
@@ -15,6 +17,8 @@ import (
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+	"go.uber.org/zap"
+	"go.uber.org/zap/zapcore"
 
 	"github.com/elastic/stream/pkg/log"
 	"github.com/elastic/stream/pkg/output"
@@ -68,17 +72,7 @@ func TestHTTPServer(t *testing.T) {
 	logger, err := log.NewLogger()
 	require.NoError(t, err)
 
-	server, err := New(&opts, logger.Sugar())
-	require.NoError(t, err)
-
-	t.Cleanup(func() { server.Close() })
-
-	ctx, cancel := context.WithCancel(context.Background())
-	t.Cleanup(cancel)
-
-	require.NoError(t, server.Start(ctx))
-
-	addr := server.listener.Addr().(*net.TCPAddr).String()
+	_, addr := startTestServer(t, &opts, logger.Sugar())
 
 	t.Run("request does not match path unless all requirements are met", func(t *testing.T) {
 		req, err := http.NewRequest("GET", "http://"+addr+"/path1/test?p1=v1", nil)
@@ -142,4 +136,171 @@ func TestHTTPServer(t *testing.T) {
 
 		assert.Equal(t, []byte{}, body)
 	})
+}
+
+func TestRunAsSequence(t *testing.T) {
+	cfg := `---
+  as_sequence: true
+  rules:
+  - path: "/path/1"
+    methods: ["GET"]
+    request_headers:
+      accept: ["application/json"]
+    responses:
+    - status_code: 200
+      body: |-
+        {"req1": "{{ .req_num }}"}
+    - status_code: 200
+      body: |-
+        {"req2": "{{ .req_num }}"}
+  - path: "/path/2"
+    methods: ["GET"]
+    request_headers:
+      accept: ["application/json"]
+    responses:
+    - status_code: 200
+      body: |-
+        {"req3": "{{ .req_num }}"}
+  - path: "/path/3"
+    methods: ["GET"]
+    request_headers:
+      accept: ["application/json"]
+    responses:
+    - status_code: 200
+      body: |-
+        {"req4": "{{ .req_num }}"}
+    - status_code: 200
+      body: |-
+        {"req5": "{{ .req_num }}"}
+  - path: "/path/4"
+    methods: ["GET"]
+    request_headers:
+      accept: ["application/json"]
+    responses:
+    - status_code: 200
+      body: |-
+        {"req6": "{{ .req_num }}"}
+  - path: "/path/5"
+    methods: ["GET"]
+    request_headers:
+      accept: ["application/json"]
+    responses:
+    - status_code: 200
+      body: |-
+        {"req7": "{{ .req_num }}"}
+`
+
+	f, err := ioutil.TempFile("", "test")
+	require.NoError(t, err)
+
+	t.Cleanup(func() { os.Remove(f.Name()) })
+
+	_, err = f.WriteString(cfg)
+	require.NoError(t, err)
+
+	opts := Options{
+		Options: &output.Options{
+			Addr: "localhost:0",
+		},
+		ConfigPath: f.Name(),
+	}
+
+	logger, err := log.NewLogger()
+	logger = logger.WithOptions(zap.OnFatal(zapcore.WriteThenPanic))
+	require.NoError(t, err)
+
+	t.Run("requests succeed if made in the expected order", func(t *testing.T) {
+		server, addr := startTestServer(t, &opts, logger.Sugar())
+
+		reqTests := []struct {
+			path         string
+			expectedBody string
+		}{
+			{"http://" + addr + "/path/1", `{"req1": "1"}`},
+			{"http://" + addr + "/path/1", `{"req2": "2"}`},
+			{"http://" + addr + "/path/2", `{"req3": "1"}`},
+			{"http://" + addr + "/path/3", `{"req4": "1"}`},
+			{"http://" + addr + "/path/3", `{"req5": "2"}`},
+			{"http://" + addr + "/path/4", `{"req6": "1"}`},
+			{"http://" + addr + "/path/5", `{"req7": "1"}`},
+		}
+
+		buf := new(bytes.Buffer)
+		server.server.Handler = http.HandlerFunc(inspectPanic(server.server.Handler, buf))
+
+		for _, reqTest := range reqTests {
+			req, err := http.NewRequest("GET", reqTest.path, nil)
+			require.NoError(t, err)
+			req.Header.Add("accept", "application/json")
+
+			resp, err := http.DefaultClient.Do(req)
+			require.NoError(t, err)
+			assert.Equal(t, 200, resp.StatusCode)
+
+			body, err := ioutil.ReadAll(resp.Body)
+			require.NoError(t, err)
+			resp.Body.Close()
+
+			assert.JSONEq(t, reqTest.expectedBody, string(body))
+			assert.Equal(t, "", buf.String())
+		}
+	})
+
+	t.Run("requests fail if made in the wrong order", func(t *testing.T) {
+		server, addr := startTestServer(t, &opts, logger.Sugar())
+		buf := new(bytes.Buffer)
+		server.server.Handler = http.HandlerFunc(inspectPanic(server.server.Handler, buf))
+
+		req, err := http.NewRequest("GET", "http://"+addr+"/path/1", nil)
+		require.NoError(t, err)
+		req.Header.Add("accept", "application/json")
+
+		resp, err := http.DefaultClient.Do(req)
+		require.NoError(t, err)
+		assert.Equal(t, 200, resp.StatusCode)
+
+		body, err := ioutil.ReadAll(resp.Body)
+		require.NoError(t, err)
+		resp.Body.Close()
+
+		assert.JSONEq(t, `{"req1": "1"}`, string(body))
+
+		req, err = http.NewRequest("GET", "http://"+addr+"/path/2", nil)
+		require.NoError(t, err)
+		req.Header.Add("accept", "application/json")
+
+		resp, err = http.DefaultClient.Do(req)
+		require.NoError(t, err)
+		assert.Equal(t, 500, resp.StatusCode)
+
+		assert.Equal(t, "expecting to match request #1 in sequence, matched rule #2 instead, exiting", buf.String())
+	})
+}
+
+func inspectPanic(h http.Handler, writer io.Writer) func(w http.ResponseWriter, r *http.Request) {
+	return func(w http.ResponseWriter, r *http.Request) {
+		defer func() {
+			if err := recover(); err != nil {
+				fmt.Fprintf(writer, "%v", err)
+				w.WriteHeader(http.StatusInternalServerError)
+			}
+		}()
+		h.ServeHTTP(w, r)
+	}
+}
+
+func startTestServer(t *testing.T, opts *Options, logger *zap.SugaredLogger) (*Server, string) {
+	server, err := New(opts, logger)
+	require.NoError(t, err)
+
+	t.Cleanup(func() { server.Close() })
+
+	ctx, cancel := context.WithCancel(context.Background())
+	t.Cleanup(cancel)
+
+	require.NoError(t, server.Start(ctx))
+
+	addr := server.listener.Addr().(*net.TCPAddr).String()
+
+	return server, addr
 }
