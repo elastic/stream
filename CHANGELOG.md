@@ -6,6 +6,16 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 
 ### Added
 
+### Changed
+
+### Fixed
+
+### Removed
+
+## [0.13.0]
+
+### Added
+
 - Added `exit-on-unmatched-rule` flag: [#63](https://github.com/elastic/stream/pull/63)
 - Added sequences to the http server: [#64](https://github.com/elastic/stream/pull/64)
 
