@@ -118,12 +118,23 @@ func newHandlerFromConfig(config *config, notFoundHandler http.HandlerFunc, logg
 
 	var buf bytes.Buffer
 
+	var currInSeq int
+	var posInSeq int
 	for i, rule := range config.Rules {
 		rule := rule
 		var count int
 		i := i
+		if i > 0 {
+			posInSeq += len(config.Rules[i-1].Responses)
+		}
+		posInSeq := posInSeq
 		logger.Debugf("Setting up rule #%d for path %q", i, rule.Path)
 		route := router.HandleFunc(rule.Path, func(w http.ResponseWriter, r *http.Request) {
+			isNext := currInSeq == posInSeq+count
+			if config.AsSequence && !isNext {
+				logger.Fatalf("expecting to match request #%d in sequence, matched rule #%d instead, exiting", currInSeq, posInSeq+count)
+			}
+
 			response := func() *response {
 				switch len(rule.Responses) {
 				case 0:
@@ -135,6 +146,7 @@ func newHandlerFromConfig(config *config, notFoundHandler http.HandlerFunc, logg
 			}()
 
 			count++
+			currInSeq++
 
 			logger.Debug(fmt.Sprintf("Rule #%d matched: request #%d => %s", i, count, strRequest(r)))
 

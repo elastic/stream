@@ -68,6 +68,7 @@ The rules will be defined in order, and will only match if all criteria is true 
 
 ### Options
 
+- `as_sequence`: if this is set to `true`, the server will exit with an error if the requests are not performed in order.
 - `rules`: a list of rules. More restrictive rules need to go on top.
 - `path`: the path to match. It can use [gorilla/mux](https://pkg.go.dev/github.com/gorilla/mux#pkg-overview) parameters patterns.
 - `methods`: a list of methods to match with the rule.
@@ -75,7 +76,7 @@ The rules will be defined in order, and will only match if all criteria is true 
 - `query_params`: Key-Value definitions of the query parameters to match. It can use [gorilla/mux](https://pkg.go.dev/github.com/gorilla/mux#Route.Queries) parameters patterns for the values. Web form params will also be added and compared against this for simplicity. If a key is given an empty value, requests with this parameter will not satisfy the rule.
 - `request_headers`: Key-Value definitions of the headers to match. Any headers outside of this list will be ignored. The matches can be defined [as regular expressions](https://pkg.go.dev/github.com/gorilla/mux#Route.HeadersRegexp).
 - `request_body`: a string defining the expected body to match for the request. If the string is quoted with slashes, the leading and trailing slash are stripped and the resulting string is interpreted as a regular expression.
-- `responses`: a list of zero or more responses to return on matches. If more than one are set, they will be returned in rolling sequence.
+- `responses`: a list of zero or more responses to return on matches. If more than one are set, they will be returned in rolling sequence. If `as_sequence` is set to `true`, they will only be able to be hit once instead of in rolling sequence.
 - `status_code`: the status code to return.
 - `headers`: Key-Value list of the headers to return with the response. The values will be evaluated as [Go templates](https://golang.org/pkg/text/template/).
 - `body`: a string defining the body that will be returned as a response. It will be evaluated as a [Go template](https://golang.org/pkg/text/template/).
