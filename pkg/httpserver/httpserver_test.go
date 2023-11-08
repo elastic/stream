@@ -277,6 +277,54 @@ func TestRunAsSequence(t *testing.T) {
 	})
 }
 
+func TestExitOnUnmatchedRule(t *testing.T) {
+	cfg := `---
+  rules:
+  - path: "/path/1"
+    methods: ["GET"]
+    request_headers:
+      accept: ["application/json"]
+    responses:
+    - status_code: 200
+      body: |-
+        {"req1": "{{ .req_num }}"}
+`
+
+	f, err := ioutil.TempFile("", "test")
+	require.NoError(t, err)
+
+	t.Cleanup(func() { os.Remove(f.Name()) })
+
+	_, err = f.WriteString(cfg)
+	require.NoError(t, err)
+
+	opts := Options{
+		Options: &output.Options{
+			Addr: "localhost:0",
+		},
+		ConfigPath:          f.Name(),
+		ExitOnUnmatchedRule: true,
+	}
+
+	logger, err := log.NewLogger()
+	logger = logger.WithOptions(zap.OnFatal(zapcore.WriteThenPanic))
+	require.NoError(t, err)
+
+	server, addr := startTestServer(t, &opts, logger.Sugar())
+	buf := new(bytes.Buffer)
+	server.server.Handler = http.HandlerFunc(inspectPanic(server.server.Handler, buf))
+
+	req, err := http.NewRequest("GET", "http://"+addr+"/path/2", nil)
+	require.NoError(t, err)
+	req.Header.Add("accept", "application/json")
+
+	resp, err := http.DefaultClient.Do(req)
+	require.NoError(t, err)
+	assert.Equal(t, 404, resp.StatusCode)
+
+	assert.Equal(t, "--exit-on-unmatched-rule is set, exiting", buf.String())
+}
+
 func inspectPanic(h http.Handler, writer io.Writer) func(w http.ResponseWriter, r *http.Request) {
 	return func(w http.ResponseWriter, r *http.Request) {
 		defer func() {
