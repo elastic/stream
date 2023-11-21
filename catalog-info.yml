@@ -36,6 +36,7 @@ spec:
     spec:
 #      branch_configuration: "main v1.*" # temporarily disable to build PRs from forks
       pipeline_file: ".buildkite/pipeline.yml"
+#      maximum_timeout_in_minutes: 120
       provider_settings:
         build_tags: true
         publish_commit_status: true
