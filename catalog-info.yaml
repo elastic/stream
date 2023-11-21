@@ -21,7 +21,7 @@ metadata:
   description: 'Pipeline for the stream project'
   links:
     - title: Pipeline
-      url: https://buildkite.com/elastic/stream-pub-sub
+      url: https://buildkite.com/elastic/stream
 
 spec:
   type: buildkite-pipeline
