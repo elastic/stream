@@ -43,7 +43,7 @@ steps:
   - label: "Publish PR Docker image"
     key: "publish-pr-img"
     if: build.env("BUILDKITE_PULL_REQUEST") != "false"
-    command: ""
+    command: "echo test me"
     notify:
       - github_commit_status:
           context: "Publish PR img"
@@ -55,7 +55,7 @@ steps:
   - label: "Publish Docker image"
     key: "publish-nonpr-img"
     if: build.env("BUILDKITE_PULL_REQUEST") == "false"
-    command: ""
+    command: "echo test me"
     notify:
       - github_commit_status:
           context: "Publish non-PR img"
