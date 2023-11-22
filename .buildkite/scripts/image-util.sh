@@ -36,4 +36,3 @@ build_image() {
     --label TIMESTAMP=$(date +%Y-%m-%d_%H:%M) \
     .
 }
-#BUILDKITE_BRANCH

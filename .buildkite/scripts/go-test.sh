@@ -6,7 +6,4 @@ source .buildkite/scripts/common.sh
 
 add_bin_path
 with_go "${GOLANG_VERSION}"
-
-echo "Starting build"
-go build
-echo "Build done!"
+gotestsum --format testname --junitfile junit-report.xml -- '-v ./...'

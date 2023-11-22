@@ -37,7 +37,10 @@ steps:
 
   - label: ":go: Test-${GOLANG_VERSION}"
     key: "test"
-    command: "gotestsum --format testname --junitfile junit-report.xml -- '-v ./...'"
+    command:
+      - "sudo apt-get update"
+      - "sudo apt-get install -y libpcap-dev"
+      - ".buildkite/scripts/go-test.sh"
     notify:
       - github_commit_status:
           context: "Test / ${GOLANG_VERSION}"
