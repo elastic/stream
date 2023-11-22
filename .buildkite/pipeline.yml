@@ -48,7 +48,7 @@ steps:
       provider: "gcp"
       image: "${IMAGE_UBUNTU_X86_64}"
     depends_on: "build"
-    artifact_paths: "build/*.xml"
+    artifact_paths: "*.xml"
 
   - label: "Publish PR Docker Image"
     key: "publish-pr-img"
