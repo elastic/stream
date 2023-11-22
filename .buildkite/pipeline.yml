@@ -23,7 +23,10 @@ steps:
 
   - label: ":go: Build-${GOLANG_VERSION}"
     key: "build"
-    command: ".buildkite/scripts/build.sh"
+    command:
+      - "sudo apt-get update"
+      - "sudo apt-get install -y libpcap-dev"
+      - ".buildkite/scripts/build.sh"
     notify:
       - github_commit_status:
           context: "Build / ${GOLANG_VERSION}"
@@ -32,7 +35,7 @@ steps:
       image: "${IMAGE_UBUNTU_X86_64}"
     depends_on: "lint"
 
-  - label: ":go: Test-${GO_VERSION}"
+  - label: ":go: Test-${GOLANG_VERSION}"
     key: "test"
     command: "gotestsum --format testname --junitfile junit-report.xml -- '-v ./...'"
     notify:
