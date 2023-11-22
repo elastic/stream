@@ -23,7 +23,7 @@ steps:
 
   - label: ":go: Build-${GOLANG_VERSION}"
     key: "build"
-    command: "go build"
+    command: ".buildkite/scripts/build.sh"
     notify:
       - github_commit_status:
           context: "Build / ${GOLANG_VERSION}"
