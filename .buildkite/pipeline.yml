@@ -52,7 +52,7 @@ steps:
   - label: "Publish PR Docker Image"
     key: "publish-pr-img"
     if: build.env("BUILDKITE_PULL_REQUEST") != "false"
-    command: ".buildkite/scripts/go-test.sh ${DOCKER_IMG_PR}"
+    command: ".buildkite/scripts/docker-build.sh ${DOCKER_IMG_PR}"
     notify:
       - github_commit_status:
           context: "Publish PR img"
@@ -64,7 +64,7 @@ steps:
   - label: "Publish Docker Image"
     key: "publish-nonpr-img"
     if: build.env("BUILDKITE_PULL_REQUEST") == "false"
-    command: ".buildkite/scripts/go-test.sh ${DOCKER_IMG}"
+    command: ".buildkite/scripts/docker-build.sh ${DOCKER_IMG}"
     notify:
       - github_commit_status:
           context: "Publish non-PR img"
