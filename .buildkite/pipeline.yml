@@ -11,8 +11,8 @@ steps:
   - label: ":golangci-lint: Lint"
     key: "lint"
     command:
-      - "apt-get update"
-      - "apt-get install -y libpcap-dev"
+      - "sudo apt-get update"
+      - "sudo apt-get install -y libpcap-dev"
       - ".buildkite/scripts/lint.sh"
     notify:
       - github_commit_status:
