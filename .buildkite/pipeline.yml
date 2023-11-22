@@ -5,7 +5,6 @@ env:
   DOCKER_REGISTRY: "docker.elastic.co"
   DOCKER_IMG: "${DOCKER_REGISTRY}/observability/stream"
   DOCKER_IMG_PR: "${DOCKER_REGISTRY}/observability-ci/stream"
-  GO111MODULE: "on"
 
 steps:
   - label: ":golangci-lint: Lint"
@@ -53,7 +52,7 @@ steps:
   - label: "Publish PR Docker Image"
     key: "publish-pr-img"
     if: build.env("BUILDKITE_PULL_REQUEST") != "false"
-    command: "echo test me"
+    command: ".buildkite/scripts/go-test.sh ${DOCKER_IMG_PR}"
     notify:
       - github_commit_status:
           context: "Publish PR img"
@@ -65,7 +64,7 @@ steps:
   - label: "Publish Docker Image"
     key: "publish-nonpr-img"
     if: build.env("BUILDKITE_PULL_REQUEST") == "false"
-    command: "echo test me"
+    command: ".buildkite/scripts/go-test.sh ${DOCKER_IMG}"
     notify:
       - github_commit_status:
           context: "Publish non-PR img"
@@ -73,7 +72,3 @@ steps:
       provider: "gcp"
       image: "${IMAGE_UBUNTU_X86_64}"
     depends_on: "test"
-
-
-
-

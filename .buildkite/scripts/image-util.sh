@@ -28,11 +28,14 @@ docker_branch_tag() {
 }
 
 build_image() {
+  local commit_tag=$1
+  local base_commit=$2
+
   docker build \
-    -t ${dockerImageGitCommitTag} \
-    --label BRANCH_NAME=${BUILDKITE_BRANCH} \
-    --label GIT_SHA=${env.GIT_BASE_COMMIT} \
-    --label GO_VERSION=${env.GO_VERSION} \
-    --label TIMESTAMP=$(date +%Y-%m-%d_%H:%M) \
+    -t "${commit_tag}" \
+    --label BRANCH_NAME="${BUILDKITE_BRANCH}" \
+    --label GIT_SHA="${base_commit}" \
+    --label GO_VERSION="${GOLANG_VERSION}" \
+    --label TIMESTAMP="$(date +%Y-%m-%d_%H:%M)" \
     .
 }
