@@ -50,7 +50,7 @@ steps:
     depends_on: "build"
     artifact_paths: "build/*.xml"
 
-  - label: "Publish PR Docker image"
+  - label: "Publish PR Docker Image"
     key: "publish-pr-img"
     if: build.env("BUILDKITE_PULL_REQUEST") != "false"
     command: "echo test me"
@@ -60,9 +60,9 @@ steps:
     agents:
       provider: "gcp"
       image: "${IMAGE_UBUNTU_X86_64}"
-    depends_on: "build"
+    depends_on: "test"
 
-  - label: "Publish Docker image"
+  - label: "Publish Docker Image"
     key: "publish-nonpr-img"
     if: build.env("BUILDKITE_PULL_REQUEST") == "false"
     command: "echo test me"
@@ -72,7 +72,7 @@ steps:
     agents:
       provider: "gcp"
       image: "${IMAGE_UBUNTU_X86_64}"
-    depends_on: "build"
+    depends_on: "test"
 
 
 
