@@ -72,3 +72,15 @@ steps:
       provider: "gcp"
       image: "${IMAGE_UBUNTU_X86_64}"
     depends_on: "test"
+
+  - label: "Publish Release Docker Image"
+    key: "publish-release-img"
+    if: build.tag =~ /^v[0-9]+\.[0-9]+$$/
+    command: ".buildkite/scripts/retag.sh ${DOCKER_IMG}"
+    notify:
+      - github_commit_status:
+          context: "Retag Release Image"
+    agents:
+      provider: "gcp"
+      image: "${IMAGE_UBUNTU_X86_64}"
+    depends_on: "test"
