@@ -55,7 +55,7 @@ steps:
     command: ".buildkite/scripts/docker-build.sh ${DOCKER_IMG_PR}"
     notify:
       - github_commit_status:
-          context: "Publish PR img"
+          context: "Publish PR Image"
     agents:
       provider: "gcp"
       image: "${IMAGE_UBUNTU_X86_64}"
@@ -67,7 +67,7 @@ steps:
     command: ".buildkite/scripts/docker-build.sh ${DOCKER_IMG}"
     notify:
       - github_commit_status:
-          context: "Publish non-PR img"
+          context: "Publish non-PR Image"
     agents:
       provider: "gcp"
       image: "${IMAGE_UBUNTU_X86_64}"

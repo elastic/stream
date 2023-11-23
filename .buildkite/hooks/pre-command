@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 set -euo pipefail
 
@@ -8,7 +8,7 @@ DOCKER_REGISTRY_SECRET_PATH="kv/ci-shared/platform-ingest/docker_registry_prod"
 
 # Secrets must be redacted
 # https://buildkite.com/docs/pipelines/managing-log-output#redacted-environment-variables
-#
+
 if [[ "$BUILDKITE_PIPELINE_SLUG" == "stream" && "$BUILDKITE_STEP_KEY" == publish* ]]; then
     export DOCKER_USERNAME_SECRET=$(retry 5 vault kv get -field user "${DOCKER_REGISTRY_SECRET_PATH}")
     export DOCKER_PASSWORD_SECRET=$(retry 5 vault kv get -field password "${DOCKER_REGISTRY_SECRET_PATH}")

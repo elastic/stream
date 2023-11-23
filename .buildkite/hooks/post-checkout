@@ -1,0 +1,7 @@
+#!/usr/bin/env bash
+
+set -euo pipefail
+
+echo "Fetching Pull Requests"
+git config remote.origin.fetch "+refs/pull/*/head:refs/remotes/origin/pr/*"
+git fetch
