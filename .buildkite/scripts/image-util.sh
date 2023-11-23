@@ -22,7 +22,7 @@ docker_commit_tag() {
 
 docker_branch_tag() {
   local image=$1
-  local branch=$($2 | awk -F':' '{print $2}')
+  local branch=$(echo "$2" | awk -F':' '{print $2}')
 
   echo "${image}:${branch}"
 }
