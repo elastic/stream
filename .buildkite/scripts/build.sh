@@ -9,4 +9,4 @@ with_go "${GOLANG_VERSION}"
 
 echo ":: Starting build ::"
 go build
-echo "Build done!"
+echo ":: Build done! ::"

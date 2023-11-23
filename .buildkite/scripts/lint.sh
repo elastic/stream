@@ -11,4 +11,4 @@ echo ":: Starting lint ::"
 go mod tidy && git diff --exit-code
 make check-fmt
 go vet
-echo "Lint done!"
+echo ":: Lint done! ::"

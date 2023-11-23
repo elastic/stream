@@ -2,6 +2,8 @@
 
 set -euo pipefail
 
-echo "Fetching Pull Requests"
-git config remote.origin.fetch "+refs/pull/*/head:refs/remotes/origin/pr/*"
-git fetch
+if [[ "$BUILDKITE_PIPELINE_SLUG" == "stream" && "$BUILDKITE_STEP_KEY" == publish* ]]; then
+   echo ":: Fetching Pull Requests ::"
+   git config remote.origin.fetch "+refs/pull/*/head:refs/remotes/origin/pr/*"
+   git fetch
+fi

@@ -10,4 +10,4 @@ with_mage
 
 echo ":: Starting tests ::"
 gotestsum --format testname --junitfile junit-report.xml -- -v ./...
-echo "Tests done!"
+echo ":: Tests done! ::"
