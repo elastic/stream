@@ -5,6 +5,8 @@ env:
   DOCKER_REGISTRY: "docker.elastic.co"
   DOCKER_IMG: "${DOCKER_REGISTRY}/observability/stream"
   DOCKER_IMG_PR: "${DOCKER_REGISTRY}/observability-ci/stream"
+  DEBIAN_FRONTEND: "noninteractive"
+  DEBIAN_PRIORITY: "critical"
 
 steps:
   - label: ":golangci-lint: Lint"
