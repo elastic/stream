@@ -19,9 +19,16 @@ docker_commit_tag() {
 
 docker_branch_tag() {
   local image=$1
-  local branch=$(echo "$2" | awk -F':' '{print $2}')
+  local branch=$2
+  local branch_tag
 
-  echo "${image}:${branch}"
+  if [[ "${branch}" == *:* ]]; then
+    branch_tag="$(echo "${branch}" | awk -F':' '{print $2}')"
+  else
+    branch_tag="${branch}"
+  fi
+
+  echo "${image}:${branch_tag}"
 }
 
 build_image() {

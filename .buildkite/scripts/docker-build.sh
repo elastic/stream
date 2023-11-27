@@ -10,6 +10,7 @@ base_commit=$(get_base_commit)
 
 commit_tag=$(docker_commit_tag "${docker_img}" "${base_commit}")
 branch_tag=$(docker_branch_tag "${docker_img}" "${BUILDKITE_BRANCH}")
+                                                  BUILDKITE_BRANCH
 
 echo ":: Building image - ${commit_tag} ::"
 build_image "${commit_tag}" "${base_commit}"
