@@ -4,7 +4,10 @@ set -euo pipefail
 
 get_base_commit() {
   local base_commit
-  base_commit=$(git rev-parse "origin/pr/${BUILDKITE_PULL_REQUEST}" | sed 's/ *$//g')
+
+  if [[ ${BUILDKITE_PULL_REQUEST} != "false" ]]; then
+    base_commit=$(git rev-parse "origin/pr/${BUILDKITE_PULL_REQUEST}" | sed 's/ *$//g')
+  fi
 
   if [[ -z $base_commit ]]; then
     git rev-parse HEAD
