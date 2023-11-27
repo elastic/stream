@@ -1,4 +1,88 @@
 # yaml-language-server: $schema=https://raw.githubusercontent.com/buildkite/pipeline-schema/main/schema.json
+env:
+  SETUP_GVM_VERSION: "v0.5.1"
+  IMAGE_UBUNTU_X86_64: "family/core-ubuntu-2204"
+  DOCKER_REGISTRY: "docker.elastic.co"
+  DOCKER_IMG: "${DOCKER_REGISTRY}/observability/stream"
+  DOCKER_IMG_PR: "${DOCKER_REGISTRY}/observability-ci/stream"
+  DEBIAN_FRONTEND: "noninteractive"
+  DEBIAN_PRIORITY: "critical"
+
 steps:
-  - label: "Test"
-    command: "echo Test me!"
+  - label: ":golangci-lint: Lint"
+    key: "lint"
+    command:
+      - "sudo apt-get update"
+      - "sudo apt-get install -y libpcap-dev"
+      - ".buildkite/scripts/lint.sh"
+    notify:
+      - github_commit_status:
+          context: "Lint"
+    agents:
+      provider: "gcp"
+      image: "${IMAGE_UBUNTU_X86_64}"
+
+  - label: ":go: Build-${GOLANG_VERSION}"
+    key: "build"
+    command:
+      - "sudo apt-get update"
+      - "sudo apt-get install -y libpcap-dev"
+      - ".buildkite/scripts/build.sh"
+    notify:
+      - github_commit_status:
+          context: "Build / ${GOLANG_VERSION}"
+    agents:
+      provider: "gcp"
+      image: "${IMAGE_UBUNTU_X86_64}"
+    depends_on: "lint"
+
+  - label: ":go: Test-${GOLANG_VERSION}"
+    key: "test"
+    command:
+      - "sudo apt-get update"
+      - "sudo apt-get install -y libpcap-dev"
+      - ".buildkite/scripts/go-test.sh"
+    notify:
+      - github_commit_status:
+          context: "Test / ${GOLANG_VERSION}"
+    agents:
+      provider: "gcp"
+      image: "${IMAGE_UBUNTU_X86_64}"
+    depends_on: "build"
+    artifact_paths: "*.xml"
+
+  - label: "Publish PR Docker Image"
+    key: "publish-pr-img"
+    if: build.env("BUILDKITE_PULL_REQUEST") != "false"
+    command: ".buildkite/scripts/docker-build.sh ${DOCKER_IMG_PR}"
+    notify:
+      - github_commit_status:
+          context: "Publish PR Image"
+    agents:
+      provider: "gcp"
+      image: "${IMAGE_UBUNTU_X86_64}"
+    depends_on: "test"
+
+  - label: "Publish Docker Image"
+    key: "publish-nonpr-img"
+    if: build.env("BUILDKITE_PULL_REQUEST") == "false"
+    command: ".buildkite/scripts/docker-build.sh ${DOCKER_IMG}"
+    notify:
+      - github_commit_status:
+          context: "Publish non-PR Image"
+    agents:
+      provider: "gcp"
+      image: "${IMAGE_UBUNTU_X86_64}"
+    depends_on: "test"
+
+  - label: "Publish Release Docker Image"
+    key: "publish-release-img"
+    if: build.tag =~ /^v[0-9]+\.[0-9]+$$/
+    command: ".buildkite/scripts/retag.sh ${DOCKER_IMG}"
+    notify:
+      - github_commit_status:
+          context: "Retag Release Image"
+    agents:
+      provider: "gcp"
+      image: "${IMAGE_UBUNTU_X86_64}"
+    depends_on: "test"
