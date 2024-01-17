@@ -6,6 +6,8 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 
 ### Added
 
+- Added `minify_json` template helper function for minifying static JSON: [#x](https://github.com/elastic/stream/pull/x)
+
 ### Changed
 
 ### Fixed
