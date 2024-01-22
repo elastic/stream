@@ -63,7 +63,7 @@ func TestHTTPServer(t *testing.T) {
           {{ minify_json ` + "`" + `
           {
           	"key1": "value1",
-          	"key2": "value2"
+          	"key2": "<value2>"
           }
           ` + "`" + `}}
 `
@@ -162,7 +162,7 @@ func TestHTTPServer(t *testing.T) {
 		require.NoError(t, err)
 		resp.Body.Close()
 
-		assert.Equal(t, `{"key1":"value1","key2":"value2"}`, string(body))
+		assert.Equal(t, `{"key1":"value1","key2":"<value2>"}`, string(body))
 	})
 }
 

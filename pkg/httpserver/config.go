@@ -8,6 +8,7 @@ import (
 	"encoding/json"
 	"errors"
 	"os"
+	"strings"
 	"text/template"
 
 	ucfg "github.com/elastic/go-ucfg"
@@ -102,6 +103,9 @@ func file(path string) (string, error) {
 }
 
 func minify(body string) (string, error) {
-	b, err := json.Marshal(json.RawMessage(body))
-	return string(b), err
+	var buf strings.Builder
+	enc := json.NewEncoder(&buf)
+	enc.SetEscapeHTML(false)
+	err := enc.Encode(json.RawMessage(body))
+	return strings.TrimSpace(buf.String()), err
 }
