@@ -5,8 +5,10 @@
 package httpserver
 
 import (
+	"encoding/json"
 	"errors"
 	"os"
+	"strings"
 	"text/template"
 
 	ucfg "github.com/elastic/go-ucfg"
@@ -45,10 +47,11 @@ func (t *tpl) Unpack(in string) error {
 	parsed, err := template.New("").
 		Option("missingkey=zero").
 		Funcs(template.FuncMap{
-			"env":      env,
-			"hostname": hostname,
-			"sum":      sum,
-			"file":     file,
+			"env":         env,
+			"hostname":    hostname,
+			"sum":         sum,
+			"file":        file,
+			"minify_json": minify,
 		}).
 		Parse(in)
 	if err != nil {
@@ -97,4 +100,12 @@ func file(path string) (string, error) {
 		return "", err
 	}
 	return string(b), nil
+}
+
+func minify(body string) (string, error) {
+	var buf strings.Builder
+	enc := json.NewEncoder(&buf)
+	enc.SetEscapeHTML(false)
+	err := enc.Encode(json.RawMessage(body))
+	return strings.TrimSpace(buf.String()), err
 }

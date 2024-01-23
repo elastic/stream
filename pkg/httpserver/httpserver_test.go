@@ -44,6 +44,7 @@ func TestHTTPServer(t *testing.T) {
         status_code: 200
         body: |-
           {"next": "http://{{ hostname }}/page/{{ sum (.req_num) 1 }}"}
+
     - path: "/page/{pagenum:[0-9]}"
       methods: ["POST"]
 
@@ -52,6 +53,19 @@ func TestHTTPServer(t *testing.T) {
         body: "{{ .request.vars.pagenum }}"
         headers:
           content-type: ["text/plain"]
+
+    - path: "/static/minify"
+      methods: ["GET"]
+
+      responses:
+      - status_code: 200
+        body: |-
+          {{ minify_json ` + "`" + `
+          {
+          	"key1": "value1",
+          	"key2": "<value2>"
+          }
+          ` + "`" + `}}
 `
 
 	f, err := ioutil.TempFile("", "test")
@@ -135,6 +149,20 @@ func TestHTTPServer(t *testing.T) {
 		resp.Body.Close()
 
 		assert.Equal(t, []byte{}, body)
+	})
+
+	t.Run("minify static JSON", func(t *testing.T) {
+		req, err := http.NewRequest("GET", "http://"+addr+"/static/minify", nil)
+		require.NoError(t, err)
+
+		resp, err := http.DefaultClient.Do(req)
+		require.NoError(t, err)
+
+		body, err := ioutil.ReadAll(resp.Body)
+		require.NoError(t, err)
+		resp.Body.Close()
+
+		assert.Equal(t, `{"key1":"value1","key2":"<value2>"}`, string(body))
 	})
 }
 
