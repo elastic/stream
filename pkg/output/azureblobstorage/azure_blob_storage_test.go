@@ -24,7 +24,7 @@ import (
 )
 
 const (
-	emulatorHost = "0.0.0.0"
+	emulatorHost = "127.0.0.1"
 	emulatorPort = "10000"
 	container    = "testcontainer"
 	blob         = "testblob"

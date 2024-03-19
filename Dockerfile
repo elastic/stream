@@ -1,4 +1,4 @@
-FROM golang:1.20.8 as builder
+FROM golang:1.22.1 as builder
 
 RUN apt-get update \
        && apt-get dist-upgrade -y \
