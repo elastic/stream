@@ -8,6 +8,8 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 
 ### Changed
 
+- Update build to use Go 1.22. [#78](https://github.com/elastic/stream/pull/78)
+
 ### Fixed
 
 ### Removed
