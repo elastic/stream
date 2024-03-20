@@ -10,7 +10,7 @@ jobs:
     name: lint
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
 
       - name: Install libpcap-dev
         run: sudo apt-get update && sudo apt-get install -y libpcap-dev
@@ -19,14 +19,14 @@ jobs:
         id: goversion
         run: echo "::set-output name=version::$(cat .go-version)"
 
-      - uses: actions/setup-go@v3
+      - uses: actions/setup-go@v5
         with:
           go-version: "${{ steps.goversion.outputs.version }}"
 
       - name: golangci-lint
-        uses: golangci/golangci-lint-action@v3
+        uses: golangci/golangci-lint-action@v4
         with:
-          version: v1.49
+          version: v1.56
           args: --timeout=5m
 
           # Ignore pre-existing issues.
