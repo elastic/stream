@@ -15,7 +15,6 @@ linters:
     - stylecheck
     - typecheck
     - unused
-    - depguard
     - errorlint
     - gofumpt
     - goimports
