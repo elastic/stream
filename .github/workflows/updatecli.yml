@@ -1,5 +1,5 @@
 ---
-name: Bump golang version
+name: Updatecli
 
 on:
   workflow_dispatch:
@@ -14,7 +14,6 @@ jobs:
   bump:
     runs-on: ubuntu-latest
     steps:
-
       - uses: actions/checkout@v4
 
       - name: Setup Git
@@ -26,4 +25,4 @@ jobs:
       - name: Run Updatecli
         env:
           GITHUB_TOKEN: ${{ github.token }}
-        run: updatecli apply --config ./.buildkite/bump-golang.yml
+        run: updatecli apply --config .github/updatecli.d/

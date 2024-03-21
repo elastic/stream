@@ -1,0 +1,60 @@
+---
+
+name: Update tool versions in Makefile for elastic/stream
+
+scms:
+  githubConfig:
+    kind: github
+    spec:
+      user: '{{ requiredEnv "GIT_USER" }}'
+      email: '{{ requiredEnv "GIT_EMAIL" }}'
+      owner: elastic
+      repository: stream
+      token: '{{ requiredEnv "GITHUB_TOKEN" }}'
+      username: '{{ requiredEnv "GIT_USER" }}'
+      branch: main
+
+sources:
+  goimports:
+    kind: golang/module
+    name: Get the latest goimports versions
+    spec:
+      module: "golang.org/x/tools"
+
+  golicenser:
+    kind: golang/module
+    name: Get the latest go-licenser versions
+    spec:
+      module: "github.com/elastic/go-licenser"
+
+targets:
+  makefile-goimports:
+    name: "Update goimports version in Makefile"
+    sourceid: goimports
+    scmid: githubConfig
+    kind: file
+    spec:
+      file: Makefile
+      matchpattern: 'GOIMPORTS := go run golang.org/x/tools/cmd/goimports@.*'
+      content: 'GOIMPORTS := go run golang.org/x/tools/cmd/goimports@{{ source "goimports" }}'
+
+  makefile-golicenser:
+    name: "Update golicenser version in Makefile"
+    sourceid: golicenser
+    scmid: githubConfig
+    kind: file
+    spec:
+      file: Makefile
+      matchpattern: 'GOLICENSER := go run github.com/elastic/go-licenser@.*'
+      content: 'GOLICENSER := go run github.com/elastic/go-licenser@{{ source "golicenser" }}'
+
+actions:
+  openPullRequest:
+    kind: github/pullrequest
+    scmid: githubConfig
+    spec:
+      automerge: false
+      labels:
+        - dependencies
+      title: '[Automation] Update Makefile with latest tool versions'
+
