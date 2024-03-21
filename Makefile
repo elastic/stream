@@ -2,7 +2,7 @@ LICENSE := ASL2-Short
 VERSION ?= local
 
 GOIMPORTS := go run golang.org/x/tools/cmd/goimports@latest
-GOLICENSER := go run github.com/elastic/go-licenser@latest
+GOLICENSER := go run github.com/elastic/go-licenser@v0.4.1
 
 check-fmt:
 	@${GOLICENSER} -d -license ${LICENSE}
