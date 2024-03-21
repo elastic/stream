@@ -7,7 +7,7 @@ package main
 import (
 	"os"
 
-	"github.com/elastic/stream/command"
+	"github.com/elastic/stream/internal/command"
 )
 
 func main() {
