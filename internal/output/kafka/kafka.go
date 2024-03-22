@@ -10,7 +10,7 @@ import (
 
 	"github.com/Shopify/sarama"
 
-	"github.com/elastic/stream/internal/pkg/output"
+	"github.com/elastic/stream/internal/output"
 )
 
 func init() {

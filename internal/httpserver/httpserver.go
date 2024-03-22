@@ -18,7 +18,7 @@ import (
 	"github.com/gorilla/mux"
 	"go.uber.org/zap"
 
-	"github.com/elastic/stream/internal/pkg/output"
+	"github.com/elastic/stream/internal/output"
 )
 
 type Server struct {

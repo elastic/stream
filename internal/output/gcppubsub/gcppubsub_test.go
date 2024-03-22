@@ -2,7 +2,7 @@
 // Elasticsearch B.V. licenses this file to you under the Apache 2.0 License.
 // See the LICENSE file in the project root for more information.
 
-package azureblobstorage
+package gcppubsub
 
 import (
 	"context"
@@ -13,21 +13,23 @@ import (
 	"net/http"
 	"os"
 	"testing"
+	"time"
 
-	"github.com/Azure/azure-sdk-for-go/sdk/storage/azblob"
+	"cloud.google.com/go/pubsub"
 	"github.com/ory/dockertest/v3"
 	"github.com/ory/dockertest/v3/docker"
+	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
-	"gotest.tools/assert"
 
-	"github.com/elastic/stream/internal/pkg/output"
+	"github.com/elastic/stream/internal/output"
 )
 
 const (
 	emulatorHost = "127.0.0.1"
-	emulatorPort = "10000"
-	container    = "testcontainer"
-	blob         = "testblob"
+	emulatorPort = "8681"
+	project      = "testProject"
+	topic        = "testTopic"
+	subscription = "testSubscription"
 )
 
 func TestMain(m *testing.M) {
@@ -37,8 +39,9 @@ func TestMain(m *testing.M) {
 	}
 
 	resource, err := pool.RunWithOptions(&dockertest.RunOptions{
-		Repository: "mcr.microsoft.com/azure-storage/azurite",
-		Tag:        "latest",
+		Repository: "google/cloud-sdk",
+		Tag:        "emulators",
+		Cmd:        []string{"gcloud", "beta", "emulators", "pubsub", "start", fmt.Sprintf("--host-port=0.0.0.0:%s", emulatorPort)},
 		PortBindings: map[docker.Port][]docker.PortBinding{
 			emulatorPort: {{HostIP: emulatorHost, HostPort: emulatorPort}},
 		},
@@ -54,24 +57,31 @@ func TestMain(m *testing.M) {
 		log.Fatalf("Could not start resource: %s", err)
 	}
 
+	// exponential backoff-retry
 	if err := pool.Retry(func() error {
 		// Disable HTTP keep-alives to ensure no extra goroutines hang around.
 		httpClient := http.Client{Transport: &http.Transport{DisableKeepAlives: true}}
+
 		// Sanity check the emulator.
-		resp, err := httpClient.Get(fmt.Sprintf("http://%s:%s/devstoreaccount1", emulatorHost, emulatorPort))
+		resp, err := httpClient.Get(fmt.Sprintf("http://%s:%s", emulatorHost, emulatorPort))
 		if err != nil {
 			return err
 		}
 		defer resp.Body.Close()
 
-		if resp.StatusCode != http.StatusBadRequest {
+		_, err = io.ReadAll(resp.Body)
+		if err != nil {
+			return err
+		}
+
+		if resp.StatusCode != http.StatusOK {
 			return fmt.Errorf("unexpected status code: %v", resp.StatusCode)
 		}
 
 		return nil
 	}); err != nil {
 		_ = pool.Purge(resource)
-		log.Fatalf("Could not connect to the Azure Blob Storage instance: %s", err)
+		log.Fatalf("Could not connect to the gcp pubsub emulator: %s", err)
 	}
 
 	code := m.Run()
@@ -81,13 +91,14 @@ func TestMain(m *testing.M) {
 	os.Exit(code)
 }
 
-func TestAzureBlobStorage(t *testing.T) {
+func TestGCPPubsub(t *testing.T) {
 	out, err := New(&output.Options{
-		Addr: emulatorHost,
-		AzureBlobStorageOptions: output.AzureBlobStorageOptions{
-			Container: container,
-			Blob:      blob,
-			Port:      emulatorPort,
+		Addr: fmt.Sprintf("%s:%s", emulatorHost, emulatorPort),
+		GCPPubsubOptions: output.GCPPubsubOptions{
+			Project:      project,
+			Topic:        topic,
+			Subscription: subscription,
+			Clear:        true,
 		},
 	})
 	require.NoError(t, err)
@@ -105,20 +116,19 @@ func TestAzureBlobStorage(t *testing.T) {
 	require.NoError(t, err)
 	assert.Equal(t, len(data), n)
 
-	connectionString := fmt.Sprintf("DefaultEndpointsProtocol=http;AccountName=devstoreaccount1;AccountKey=Eby8vdM02xNOcqFlqUwJPLlmEtlCDXJ1OUzFT50uSRZ6IFsuFq2UVErCz4I6tq/K1SZFPTOtr/KBHBeksoGMGw==;BlobEndpoint=http://%s:%s/devstoreaccount1;", emulatorHost, emulatorPort)
 	ctx, cancel := context.WithCancel(context.Background())
-	serviceClient, _ := azblob.NewClientFromConnectionString(connectionString, nil)
-
-	blobDownloadResponse, err := serviceClient.DownloadStream(ctx, container, blob, nil)
+	client, err := pubsub.NewClient(ctx, project)
 	require.NoError(t, err)
-
-	reader := blobDownloadResponse.Body
-	downloadData, err := io.ReadAll(reader)
-	require.NoError(t, err)
-	assert.Equal(t, string(data), string(downloadData))
-
-	err = reader.Close()
-	require.NoError(t, err)
-
+	t.Cleanup(func() { _ = client.Close() })
 	t.Cleanup(cancel)
+
+	recvCtx, recvCancel := context.WithTimeout(context.Background(), 10*time.Second)
+	t.Cleanup(recvCancel)
+	var recvData []byte
+	require.NoError(t, client.Subscription(subscription).Receive(recvCtx, func(_ context.Context, msg *pubsub.Message) {
+		recvData = msg.Data
+		msg.Ack()
+		recvCancel()
+	}))
+	assert.Equal(t, string(data), string(recvData))
 }

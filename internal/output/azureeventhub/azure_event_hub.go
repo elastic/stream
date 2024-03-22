@@ -10,7 +10,7 @@ import (
 	"github.com/Azure/azure-sdk-for-go/sdk/azidentity"
 	"github.com/Azure/azure-sdk-for-go/sdk/messaging/azeventhubs"
 
-	"github.com/elastic/stream/internal/pkg/output"
+	"github.com/elastic/stream/internal/output"
 )
 
 func init() {

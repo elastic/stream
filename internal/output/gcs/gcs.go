@@ -12,7 +12,7 @@ import (
 	"cloud.google.com/go/storage"
 	"google.golang.org/api/option"
 
-	"github.com/elastic/stream/internal/pkg/output"
+	"github.com/elastic/stream/internal/output"
 )
 
 func init() {

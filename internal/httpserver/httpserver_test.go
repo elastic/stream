@@ -20,8 +20,8 @@ import (
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
 
-	"github.com/elastic/stream/internal/pkg/log"
-	"github.com/elastic/stream/internal/pkg/output"
+	"github.com/elastic/stream/internal/log"
+	"github.com/elastic/stream/internal/output"
 )
 
 func TestHTTPServer(t *testing.T) {

@@ -17,7 +17,7 @@ import (
 	"github.com/stretchr/testify/require"
 	"gotest.tools/assert"
 
-	"github.com/elastic/stream/internal/pkg/output"
+	"github.com/elastic/stream/internal/output"
 )
 
 const (

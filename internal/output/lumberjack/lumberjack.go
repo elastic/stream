@@ -18,7 +18,7 @@ import (
 
 	v2 "github.com/elastic/go-lumber/client/v2"
 
-	"github.com/elastic/stream/internal/pkg/output"
+	"github.com/elastic/stream/internal/output"
 )
 
 func init() {

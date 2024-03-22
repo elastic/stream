@@ -8,7 +8,7 @@ import (
 	"errors"
 	"fmt"
 
-	"github.com/elastic/stream/internal/pkg/output"
+	"github.com/elastic/stream/internal/output"
 
 	"github.com/Azure/azure-sdk-for-go/sdk/storage/azblob"
 	blobalias "github.com/Azure/azure-sdk-for-go/sdk/storage/azblob/blob"

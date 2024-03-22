@@ -2,7 +2,7 @@
 // Elasticsearch B.V. licenses this file to you under the Apache 2.0 License.
 // See the LICENSE file in the project root for more information.
 
-package gcppubsub
+package gcs
 
 import (
 	"context"
@@ -10,27 +10,27 @@ import (
 	"fmt"
 	"io"
 	"log"
+	"net"
 	"net/http"
 	"os"
 	"testing"
-	"time"
 
-	"cloud.google.com/go/pubsub"
 	"github.com/ory/dockertest/v3"
 	"github.com/ory/dockertest/v3/docker"
-	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+	"gotest.tools/assert"
 
-	"github.com/elastic/stream/internal/pkg/output"
+	"github.com/elastic/stream/internal/output"
 )
 
 const (
-	emulatorHost = "127.0.0.1"
-	emulatorPort = "8681"
-	project      = "testProject"
-	topic        = "testTopic"
-	subscription = "testSubscription"
+	emulatorHost = "localhost"
+	emulatorPort = "4443"
+	bucket       = "testbucket"
+	objectname   = "testobject"
 )
+
+var emulatorHostAndPort = fmt.Sprintf("http://%s", net.JoinHostPort(emulatorHost, emulatorPort))
 
 func TestMain(m *testing.M) {
 	pool, err := dockertest.NewPool("")
@@ -39,9 +39,9 @@ func TestMain(m *testing.M) {
 	}
 
 	resource, err := pool.RunWithOptions(&dockertest.RunOptions{
-		Repository: "google/cloud-sdk",
-		Tag:        "emulators",
-		Cmd:        []string{"gcloud", "beta", "emulators", "pubsub", "start", fmt.Sprintf("--host-port=0.0.0.0:%s", emulatorPort)},
+		Repository: "fsouza/fake-gcs-server",
+		Tag:        "latest",
+		Cmd:        []string{"-host=0.0.0.0", "-public-host=localhost", fmt.Sprintf("-port=%s", emulatorPort), "-scheme=http"},
 		PortBindings: map[docker.Port][]docker.PortBinding{
 			emulatorPort: {{HostIP: emulatorHost, HostPort: emulatorPort}},
 		},
@@ -57,13 +57,12 @@ func TestMain(m *testing.M) {
 		log.Fatalf("Could not start resource: %s", err)
 	}
 
-	// exponential backoff-retry
 	if err := pool.Retry(func() error {
 		// Disable HTTP keep-alives to ensure no extra goroutines hang around.
 		httpClient := http.Client{Transport: &http.Transport{DisableKeepAlives: true}}
 
 		// Sanity check the emulator.
-		resp, err := httpClient.Get(fmt.Sprintf("http://%s:%s", emulatorHost, emulatorPort))
+		resp, err := httpClient.Get(fmt.Sprintf("http://%s:%s/storage/v1/b", emulatorHost, emulatorPort))
 		if err != nil {
 			return err
 		}
@@ -73,15 +72,13 @@ func TestMain(m *testing.M) {
 		if err != nil {
 			return err
 		}
-
 		if resp.StatusCode != http.StatusOK {
 			return fmt.Errorf("unexpected status code: %v", resp.StatusCode)
 		}
-
-		return nil
+		return err
 	}); err != nil {
 		_ = pool.Purge(resource)
-		log.Fatalf("Could not connect to the gcp pubsub emulator: %s", err)
+		log.Fatalf("Could not connect to the gcs instance: %s", err)
 	}
 
 	code := m.Run()
@@ -91,14 +88,12 @@ func TestMain(m *testing.M) {
 	os.Exit(code)
 }
 
-func TestGCPPubsub(t *testing.T) {
+func TestGcs(t *testing.T) {
 	out, err := New(&output.Options{
-		Addr: fmt.Sprintf("%s:%s", emulatorHost, emulatorPort),
-		GCPPubsubOptions: output.GCPPubsubOptions{
-			Project:      project,
-			Topic:        topic,
-			Subscription: subscription,
-			Clear:        true,
+		Addr: emulatorHostAndPort,
+		GcsOptions: output.GcsOptions{
+			Bucket: bucket,
+			Object: objectname,
 		},
 	})
 	require.NoError(t, err)
@@ -116,19 +111,21 @@ func TestGCPPubsub(t *testing.T) {
 	require.NoError(t, err)
 	assert.Equal(t, len(data), n)
 
-	ctx, cancel := context.WithCancel(context.Background())
-	client, err := pubsub.NewClient(ctx, project)
+	// Need to close the Writer for the Object to be created in the Bucket.
+	out.Close()
+
+	gcsClient, ctx, cancel, err := NewClient(emulatorHostAndPort)
 	require.NoError(t, err)
-	t.Cleanup(func() { _ = client.Close() })
+	t.Cleanup(func() { _ = gcsClient.Close() })
 	t.Cleanup(cancel)
 
-	recvCtx, recvCancel := context.WithTimeout(context.Background(), 10*time.Second)
-	t.Cleanup(recvCancel)
-	var recvData []byte
-	require.NoError(t, client.Subscription(subscription).Receive(recvCtx, func(_ context.Context, msg *pubsub.Message) {
-		recvData = msg.Data
-		msg.Ack()
-		recvCancel()
-	}))
-	assert.Equal(t, string(data), string(recvData))
+	o := gcsClient.Bucket(bucket).Object(objectname)
+	r, err := o.NewReader(ctx)
+	require.NoError(t, err)
+
+	body, err := io.ReadAll(r)
+	require.NoError(t, err)
+	defer r.Close()
+
+	assert.Equal(t, string(data), string(body))
 }

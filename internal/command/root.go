@@ -21,21 +21,21 @@ import (
 	"github.com/elastic/go-concert/ctxtool/osctx"
 	"github.com/elastic/go-concert/timed"
 
-	"github.com/elastic/stream/internal/pkg/httpserver"
-	"github.com/elastic/stream/internal/pkg/log"
-	"github.com/elastic/stream/internal/pkg/output"
+	"github.com/elastic/stream/internal/httpserver"
+	"github.com/elastic/stream/internal/log"
+	"github.com/elastic/stream/internal/output"
 
 	// Register outputs.
-	_ "github.com/elastic/stream/internal/pkg/output/azureblobstorage"
-	_ "github.com/elastic/stream/internal/pkg/output/azureeventhub"
-	_ "github.com/elastic/stream/internal/pkg/output/gcppubsub"
-	_ "github.com/elastic/stream/internal/pkg/output/gcs"
-	_ "github.com/elastic/stream/internal/pkg/output/kafka"
-	_ "github.com/elastic/stream/internal/pkg/output/lumberjack"
-	_ "github.com/elastic/stream/internal/pkg/output/tcp"
-	_ "github.com/elastic/stream/internal/pkg/output/tls"
-	_ "github.com/elastic/stream/internal/pkg/output/udp"
-	_ "github.com/elastic/stream/internal/pkg/output/webhook"
+	_ "github.com/elastic/stream/internal/output/azureblobstorage"
+	_ "github.com/elastic/stream/internal/output/azureeventhub"
+	_ "github.com/elastic/stream/internal/output/gcppubsub"
+	_ "github.com/elastic/stream/internal/output/gcs"
+	_ "github.com/elastic/stream/internal/output/kafka"
+	_ "github.com/elastic/stream/internal/output/lumberjack"
+	_ "github.com/elastic/stream/internal/output/tcp"
+	_ "github.com/elastic/stream/internal/output/tls"
+	_ "github.com/elastic/stream/internal/output/udp"
+	_ "github.com/elastic/stream/internal/output/webhook"
 )
 
 func Execute() error {

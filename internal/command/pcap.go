@@ -10,8 +10,8 @@ import (
 	"github.com/spf13/cobra"
 	"go.uber.org/zap"
 
-	"github.com/elastic/stream/internal/pkg/cmdutil"
-	"github.com/elastic/stream/internal/pkg/output"
+	"github.com/elastic/stream/internal/cmdutil"
+	"github.com/elastic/stream/internal/output"
 )
 
 type pcapRunner struct {

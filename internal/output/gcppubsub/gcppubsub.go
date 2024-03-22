@@ -14,7 +14,7 @@ import (
 	"cloud.google.com/go/pubsub"
 	"google.golang.org/api/iterator"
 
-	"github.com/elastic/stream/internal/pkg/output"
+	"github.com/elastic/stream/internal/output"
 )
 
 func init() {
