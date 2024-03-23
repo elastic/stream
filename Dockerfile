@@ -1,9 +1,6 @@
-FROM golang:1.22.1 as builder
+FROM golang:1.22.1-alpine3.19 as builder
 
-RUN apt-get update \
-       && apt-get dist-upgrade -y \
-       && apt-get install -y libpcap-dev \
-       && rm -rf /var/lib/apt/lists/*
+RUN apk add --no-cache musl-dev gcc libpcap libpcap-dev
 
 ADD . /app
 
@@ -14,12 +11,9 @@ RUN go mod download
 RUN go build
 
 # ------------------------------------------------------------------------------
-FROM debian:stable-slim
+FROM alpine:3.19
 
-RUN apt-get update \
-       && apt-get dist-upgrade -y \
-       && apt-get install -y libpcap0.8 \
-       && rm -rf /var/lib/apt/lists/*
+RUN apk add --no-cache libpcap
 
 COPY --chown=0:0 --from=builder /app/stream /stream
 
