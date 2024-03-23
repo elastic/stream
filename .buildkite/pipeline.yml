@@ -54,7 +54,10 @@ steps:
   - label: "Publish PR Docker Image"
     key: "publish-pr-img"
     if: build.env("BUILDKITE_PULL_REQUEST") != "false"
-    command: ".buildkite/scripts/docker-build.sh ${DOCKER_IMG_PR}"
+    command:
+      - "sudo apt-get update"
+      - "sudo apt-get install -y qemu-user-static binfmt-support"
+      - ".buildkite/scripts/docker-build.sh ${DOCKER_IMG_PR}"
     notify:
       - github_commit_status:
           context: "Publish PR Image"
@@ -66,7 +69,10 @@ steps:
   - label: "Publish Docker Image"
     key: "publish-nonpr-img"
     if: build.env("BUILDKITE_PULL_REQUEST") == "false"
-    command: ".buildkite/scripts/docker-build.sh ${DOCKER_IMG}"
+    command:
+      - "sudo apt-get update"
+      - "sudo apt-get install -y qemu-user-static binfmt-support"
+      - ".buildkite/scripts/docker-build.sh ${DOCKER_IMG}"
     notify:
       - github_commit_status:
           context: "Publish non-PR Image"
