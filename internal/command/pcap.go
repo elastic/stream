@@ -71,7 +71,18 @@ func (r *pcapRunner) sendPCAP(path string, out output.Output) error {
 			break
 		}
 
-		payloadData := packet.TransportLayer().LayerPayload()
+		if packet == nil {
+			logger.Warnw("Skipping nil packet")
+			continue
+		}
+
+		tl := packet.TransportLayer()
+		if tl == nil {
+			logger.Warnw("Skipping packet with no transport layer")
+			continue
+		}
+
+		payloadData := tl.LayerPayload()
 
 		// TODO: Rate-limit for UDP.
 		n, err := out.Write(payloadData)
