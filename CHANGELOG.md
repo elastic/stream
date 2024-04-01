@@ -12,6 +12,8 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 
 ### Fixed
 
+- Check for nil packet and transport layer when streaming pcap files [#88](https://github.com/elastic/stream/pull/88)
+
 ### Removed
 
 ## [0.14.0]
