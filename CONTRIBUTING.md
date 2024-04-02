@@ -13,7 +13,7 @@ block format like
 
 ~~~
 ```release-note:enhancement
-webook: Added support for HTTP response headers.
+webhook: Added support for HTTP response headers.
 ```
 ~~~
 
@@ -33,7 +33,7 @@ more than one change.
 http mock server: Added minify_json template helper function for minifying static JSON.
 ```
 
-```release-note:bugfix
+```release-note:bug
 http mock server: Fixed YAML unmarshaling of numbers.
 ```
 ~~~
