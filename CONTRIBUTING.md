@@ -3,10 +3,40 @@
 Pull requests are welcomed. You must
 
 - Sign the Elastic [Contributor License Agreement](https://www.elastic.co/contributor-agreement).
-- Include a [changelog][changelog_docs] entry at `.changelog/{pr-number}.txt` with your pull request.
+- Include a changelog entry at `.changelog/{pr-number}.txt` with your pull
+  request. Or label the PR with `skip-changelog` if it is a non-user facing
+  change (test fixes, CI changes, etc.).
 - Include tests that demonstrate the change is working.
 
-[changelog_docs]: https://github.com/GoogleCloudPlatform/magic-modules/blob/2834761fec3acbf35cacbffe100530f82eada650/.ci/RELEASE_NOTES_GUIDE.md#expected-format
+The `.changelog/{pr-number}.txt` changelog file must follow a Markdown code
+block format like
+
+~~~
+```release-note:enhancement
+webook: Added support for HTTP response headers.
+```
+~~~
+
+You must use one of these types:
+
+- `release-note:enhancement`
+- `release-note:bug`
+- `release-note:deprecation`
+- `release-note:breaking-change`
+- `release-note:new-resource`
+
+The changelog file may contain more than one Markdown code block if there is
+more than one change.
+
+~~~
+```release-note:enhancement
+http mock server: Added minify_json template helper function for minifying static JSON.
+```
+
+```release-note:bugfix
+http mock server: Fixed YAML unmarshaling of numbers.
+```
+~~~
 
 ## Releasing
 
