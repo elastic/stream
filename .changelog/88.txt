@@ -1,0 +1,3 @@
+```release-note:bug
+pcap input: Check for nil packet and transport layer when streaming pcap files.
+```
