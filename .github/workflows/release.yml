@@ -36,6 +36,7 @@ jobs:
             -this-release HEAD | tee /tmp/release-notes.txt
 
           cat << EOF >> /tmp/release-notes.txt
+
           DOWNLOAD:
 
           - \`docker pull docker.elastic.co/observability/stream:${{ inputs.version }}\`
