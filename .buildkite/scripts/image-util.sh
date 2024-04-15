@@ -32,7 +32,8 @@ docker_branch_tag() {
   # The tag must be valid ASCII and can contain lowercase and uppercase letters,
   # digits, underscores, periods, and hyphens. It can't start with a period or
   # hyphen and must be no longer than 128 characters.
-  branch_tag=${branch_tag//[^a-zA-Z0-9]/_}
+  branch_tag=${branch_tag//[^-.a-zA-Z0-9]/_}
+  branch_tag=${branch_tag/#[-.]/_}
   branch_tag=${branch_tag:0:128}
 
   echo "${image}:${branch_tag}"
