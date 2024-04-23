@@ -1,0 +1,11 @@
+```release-note:enhancement
+build: Upgraded golang.org/x/crypto v0.21.0 => v0.22.0.
+```
+
+```release-note:enhancement
+build: Upgraded golang.org/x/net v0.22.0 => v0.24.0.
+```
+
+```release-note:enhancement
+build: Upgraded golang.org/x/sys v0.18.0 => v0.19.0.
+```
