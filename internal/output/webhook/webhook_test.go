@@ -11,6 +11,7 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"testing"
+	"time"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -57,6 +58,7 @@ func TestWebhook(t *testing.T) {
 			},
 			Username: username,
 			Password: password,
+			Timeout:  time.Second,
 		},
 	})
 	require.NoError(t, err)

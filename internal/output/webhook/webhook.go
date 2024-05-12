@@ -12,7 +12,6 @@ import (
 	"net/http"
 	"net/url"
 	"strings"
-	"time"
 
 	"github.com/elastic/stream/internal/output"
 )
@@ -31,8 +30,11 @@ func New(opts *output.Options) (output.Output, error) {
 		return nil, fmt.Errorf("address must be a valid URL for webhook output: %w", err)
 	}
 
+	if opts.Timeout < 0 {
+		return nil, fmt.Errorf("timeout must not be negative: %v", opts.Timeout)
+	}
 	client := &http.Client{
-		Timeout: time.Second,
+		Timeout: opts.Timeout,
 		Transport: &http.Transport{
 			TLSClientConfig: &tls.Config{
 				InsecureSkipVerify: opts.InsecureTLS,
