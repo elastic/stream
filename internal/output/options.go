@@ -26,10 +26,11 @@ type Options struct {
 }
 
 type WebhookOptions struct {
-	ContentType string   // Content-Type header.
-	Headers     []string // Headers in Key=Value format.
-	Username    string   // Basic auth username.
-	Password    string   // Basic auth password.
+	ContentType string        // Content-Type header.
+	Headers     []string      // Headers in Key=Value format.
+	Username    string        // Basic auth username.
+	Password    string        // Basic auth password.
+	Timeout     time.Duration // Timeout for request handling.
 }
 
 type GCPPubsubOptions struct {
