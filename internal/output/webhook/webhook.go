@@ -9,6 +9,7 @@ import (
 	"context"
 	"crypto/tls"
 	"fmt"
+	"io"
 	"net/http"
 	"net/url"
 	"strings"
@@ -94,10 +95,15 @@ func (o *Output) Write(b []byte) (int, error) {
 	if err != nil {
 		return 0, err
 	}
+	var buf bytes.Buffer
+	io.Copy(&buf, resp.Body)
 	defer resp.Body.Close()
 
 	if resp.StatusCode != http.StatusOK {
-		return 0, fmt.Errorf("http post to webhook failed with http status %v %v", resp.StatusCode, resp.Status)
+		if buf.Len() == 0 {
+			buf.WriteString("no body")
+		}
+		return 0, fmt.Errorf("http post to webhook failed with http status %v %v: %s", resp.StatusCode, resp.Status, &buf)
 	}
 
 	return len(b), nil
