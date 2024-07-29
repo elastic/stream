@@ -21,7 +21,7 @@ jobs:
         uses: elastic/apm-pipeline-library/.github/actions/setup-git@current
 
       - name: Install Updatecli in the runner
-        uses: updatecli/updatecli-action@8189f9f0e590d265fee517279fa4416eea5459ca # v2.62.0
+        uses: updatecli/updatecli-action@3a8785d88ec4fa03d86521a181f37c0e74627463 # v2.64.0
 
       - name: Run Updatecli
         env:
