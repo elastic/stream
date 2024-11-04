@@ -6,6 +6,7 @@ package tcp
 
 import (
 	"context"
+	"errors"
 	"io"
 	"net"
 	"time"
@@ -44,7 +45,9 @@ func (o *Output) Conn() net.Conn {
 
 func (o *Output) Close() error {
 	if o.conn != nil {
-		o.conn.CloseWrite()
+		if err := o.conn.CloseWrite(); err != nil {
+			return err
+		}
 
 		// drain to facilitate graceful close on the other side
 		deadline := time.Now().Add(5 * time.Second)
@@ -54,7 +57,7 @@ func (o *Output) Close() error {
 		buffer := make([]byte, 1024)
 		for {
 			_, err := o.conn.Read(buffer)
-			if err == io.EOF {
+			if errors.Is(err, io.EOF) {
 				break
 			} else if err != nil {
 				return err
