@@ -1,0 +1,3 @@
+```release-note:bug
+TCP, TLS outputs: Close connections gracefully to avoid data loss.
+```
