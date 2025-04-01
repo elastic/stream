@@ -26,7 +26,7 @@ jobs:
       - name: golangci-lint
         uses: golangci/golangci-lint-action@v7
         with:
-          version: v1.61
+          version: latest
           args: --timeout=5m
 
           # Ignore pre-existing issues.
