@@ -48,7 +48,7 @@ sources:
     kind: shell
     transformers:
       - findsubmatch:
-          pattern: '^(\d+.\d+)(.\d+)?'
+          pattern: '^(\d+.\d+.\d+)'
           captureindex: 1
     spec:
       command: echo {{ source "latestGoVersion" }}
@@ -71,7 +71,7 @@ conditions:
 
 targets:
   update-go-version:
-    name: "Update .go-version"
+    name: Update .go-version with {{ source "latestGoVersion" }}
     sourceid: latestGoVersion
     scmid: githubConfig
     kind: file
@@ -80,7 +80,7 @@ targets:
       file: .go-version
       matchpattern: '\d+.\d+.\d+'
   update-dockerfiles:
-    name: "Update from dockerfiles"
+    name: Update Dockerfile golang image
     sourceid: latestGoVersion
     scmid: githubConfig
     kind: file
@@ -97,4 +97,4 @@ targets:
     spec:
       content: 'go {{ source "gomod" }}'
       file: go.mod
-      matchpattern: 'go \d+.\d+'
+      matchpattern: 'go \d+\.\d+.*'
