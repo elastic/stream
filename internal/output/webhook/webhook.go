@@ -47,8 +47,22 @@ func New(opts *output.Options) (output.Output, error) {
 }
 
 func (o *Output) DialContext(ctx context.Context) error {
-	// Use a HEAD request to check if the service is ready.
-	req, err := http.NewRequestWithContext(ctx, http.MethodHead, o.opts.Addr, nil)
+	method := o.opts.WebhookOptions.Probe
+	switch method {
+	case "", "1", "true", http.MethodHead:
+		// Default behaviour is to do a HEAD probe.
+		method = http.MethodHead
+	case "0", "false":
+		// Don't probe.
+		return nil
+	case http.MethodGet, http.MethodConnect, http.MethodOptions, http.MethodPatch, http.MethodPost, http.MethodPut:
+		// Fall through with the option that the env var specifies.
+	default:
+		return fmt.Errorf("unknown probe behavior option: %q", method)
+	}
+
+	// Use a request to check if the service is ready.
+	req, err := http.NewRequestWithContext(ctx, method, o.opts.Addr, nil)
 	if err != nil {
 		return err
 	}

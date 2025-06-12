@@ -1,0 +1,3 @@
+```release-note:enhancement
+webhook output: Add support for server probing behavior configuration.
+```

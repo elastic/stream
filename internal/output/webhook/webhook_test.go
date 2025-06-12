@@ -10,6 +10,7 @@ import (
 	"io"
 	"net/http"
 	"net/http/httptest"
+	"sync/atomic"
 	"testing"
 	"time"
 
@@ -75,4 +76,54 @@ func TestWebhook(t *testing.T) {
 	n, err := out.Write(data)
 	require.NoError(t, err)
 	assert.Equal(t, len(data), n)
+}
+
+func TestWebhookProbe(t *testing.T) {
+	for _, test := range []struct {
+		name   string
+		method string
+		probed bool
+		ok     bool
+	}{
+		{name: "unset", method: "", probed: true, ok: false},
+		{name: "true", method: "true", probed: true, ok: false},
+		{name: "HEAD", method: "HEAD", probed: true, ok: false},
+
+		{name: "zero", method: "0", probed: false, ok: true},
+		{name: "false", method: "false", probed: false, ok: true},
+
+		{name: "CONNECT", method: "CONNECT", probed: true, ok: false},
+		{name: "GET", method: "GET", probed: true, ok: false},
+		{name: "OPTIONS", method: "OPTIONS", probed: true, ok: false},
+		{name: "POST", method: "POST", probed: true, ok: true}, // There can be only one.
+		{name: "PUT", method: "PUT", probed: true, ok: false},
+	} {
+		t.Run(test.name, func(t *testing.T) {
+			var probed atomic.Bool
+			ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+				probed.Store(true)
+				if test.ok {
+					assert.Equal(t, http.MethodPost, r.Method)
+				} else {
+					assert.NotEqual(t, http.MethodPost, r.Method)
+				}
+			}))
+			defer ts.Close()
+
+			out, err := New(&output.Options{
+				Addr: ts.URL + "/logs",
+				WebhookOptions: output.WebhookOptions{
+					Timeout: time.Second,
+					Probe:   test.method,
+				},
+			})
+			require.NoError(t, err)
+
+			err = out.DialContext(context.Background())
+			require.NoError(t, err)
+
+			assert.Equal(t, test.probed, probed.Load())
+		})
+	}
+
 }
