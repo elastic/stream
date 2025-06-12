@@ -31,6 +31,7 @@ type WebhookOptions struct {
 	Username    string        // Basic auth username.
 	Password    string        // Basic auth password.
 	Timeout     time.Duration // Timeout for request handling.
+	Probe       string        // Server probe behavior.
 }
 
 type GCPPubsubOptions struct {
