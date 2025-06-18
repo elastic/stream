@@ -75,6 +75,7 @@ func ExecuteContext(ctx context.Context) error {
 	rootCmd.PersistentFlags().StringVar(&opts.WebhookOptions.Password, "webhook-password", "", "webhook password for basic authentication")
 	rootCmd.PersistentFlags().StringVar(&opts.WebhookOptions.Username, "webhook-username", "", "webhook username for basic authentication")
 	rootCmd.PersistentFlags().DurationVar(&opts.WebhookOptions.Timeout, "webhook-timeout", time.Second, "webhook request timeout (zero is no timeout)")
+	rootCmd.PersistentFlags().StringVar(&opts.WebhookOptions.Probe, "webhook-probe", "", "webhook server probe request method (''/1/true/HEAD, CONNECT, GET, ..., or 0/false for no probe)")
 
 	// GCP Pubsub output flags.
 	rootCmd.PersistentFlags().StringVar(&opts.GCPPubsubOptions.Project, "gcppubsub-project", "test", "GCP Pubsub project name")
