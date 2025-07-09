@@ -1,0 +1,3 @@
+```release-note:enhancement
+http-server: Add fault injection support to simulate service degradation and test client resilience.
+```

@@ -92,6 +92,59 @@ When using [Go templates](https://golang.org/pkg/text/template/) as part of the 
 - `.request.url`: the url object. Can be used as per [the Go URL documentation.](https://golang.org/pkg/net/url/#URL)
 - `.request.headers` the headers object. Can be used as per [the Go http.Header documentation.](https://golang.org/pkg/net/http/#Header)
 
+### Fault injection
+
+The `http-server` subcommand supports fault injection, a form of chaos
+engineering, to test the resilience of client applications. It allows you to
+simulate failures and delays in the server's responses. This is useful for
+identifying how your client application behaves under adverse network conditions
+or when a service it depends on is experiencing problems.
+
+There are two types of fault injection available, and they can be used
+independently or together:
+
+1. **HTTP Error Injection**: This injects an HTTP error status code in a certain
+   percentage of responses.
+2. **Response Delay**: This adds a delay to a certain percentage of responses.
+
+These fault injection settings apply to all mocked API paths that the
+`http-server` is listening on.
+
+#### HTTP Error Injection
+
+You can configure the server to return a specific HTTP error code for a portion
+of the requests it receives.
+
+* `--fault-rate`: A floating-point number between `0.0` and `1.0` that specifies
+  the percentage of requests that should fail. For example, a value of `0.1`
+  means 10% of requests will receive an error. The default is `0.0` (no errors
+  injected).
+* `--fault-error-code`: The HTTP status code to return for the failed requests.
+  The default is `500` (Internal Server Error).
+
+Example: To make 25% of requests fail with a `503 Service Unavailable` error:
+
+```bash
+stream http-server --fault-rate 0.25 --fault-error-code 503
+```
+
+#### Response Delay
+
+You can introduce a delay in the server's response for a portion of the
+requests.
+
+* `--delay-rate`: A floating-point number between `0.0` and `1.0` that specifies
+  the percentage of requests that should be delayed. The default is `0.0` (no
+  delay).
+* `--delay-duration`: The duration of the delay to apply to requests (e.g.,
+  `500ms`, `2s`). The default is `0s`.
+
+Example: To add a 2-second delay to 50% of requests:
+
+```bash
+stream http-server --delay-rate 0.5 --delay-duration 2s
+```
+
 ## Lumberjack Output Reference
 
 Lumberjack is the protocol used between Elastic Beats and Logstash. It is
