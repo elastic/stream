@@ -1,6 +1,12 @@
 // Licensed to Elasticsearch B.V. under one or more agreements.
 // Elasticsearch B.V. licenses this file to you under the Apache 2.0 License.
 // See the LICENSE file in the project root for more information.
+
+// Package httpserver provides a configurable mock HTTP server for testing and
+// development purposes. It allows users to define request matching rules and
+// dynamic templated responses via configuration files. Features include support
+// for request sequencing, custom headers, authentication, TLS, and advanced
+// response templating.
 package httpserver
 
 import (
@@ -24,6 +30,7 @@ import (
 	"github.com/elastic/stream/internal/output"
 )
 
+// Server is an HTTP server for mocking HTTP responses.
 type Server struct {
 	logger   *zap.SugaredLogger
 	opts     *Options
@@ -32,6 +39,7 @@ type Server struct {
 	ctx      context.Context
 }
 
+// Options are the options for the HTTP server.
 type Options struct {
 	*output.Options
 	TLSCertificate      string        // TLS certificate file path.
@@ -46,6 +54,7 @@ type Options struct {
 	ExitOnUnmatchedRule bool          // If true it will exit if a request does not match any rule.
 }
 
+// New creates a new HTTP server.
 func New(opts *Options, logger *zap.SugaredLogger) (*Server, error) {
 	if opts.Addr == "" {
 		return nil, errors.New("a listen address is required")
@@ -121,6 +130,7 @@ func New(opts *Options, logger *zap.SugaredLogger) (*Server, error) {
 	}, nil
 }
 
+// Start starts the HTTP server.
 func (o *Server) Start(ctx context.Context) error {
 	o.ctx = ctx
 
@@ -144,6 +154,8 @@ func (o *Server) Start(ctx context.Context) error {
 	return nil
 }
 
+// Close gracefully shuts down the server without interrupting any
+// active connections.
 func (o *Server) Close() error {
 	o.logger.Info("shutting down http-server...")
 

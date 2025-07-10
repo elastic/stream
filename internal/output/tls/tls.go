@@ -3,6 +3,7 @@
 // See the LICENSE file in the project root for more information.
 
 package tcp
+// Package tls provides an output that writes data to a TLS+TCP connection.
 
 import (
 	"context"
@@ -19,15 +20,18 @@ func init() {
 	output.Register("tls", New)
 }
 
+// Output is an output that writes to a TLS connection.
 type Output struct {
 	opts *output.Options
 	conn *tls.Conn
 }
 
+// New creates a new TLS output.
 func New(opts *output.Options) (output.Output, error) {
 	return &Output{opts: opts}, nil
 }
 
+// DialContext dials the TLS connection.
 func (o *Output) DialContext(ctx context.Context) error {
 	d := tls.Dialer{
 		Config: &tls.Config{
@@ -45,6 +49,7 @@ func (o *Output) DialContext(ctx context.Context) error {
 	return nil
 }
 
+// Close closes the TLS connection.
 func (o *Output) Close() error {
 	if o.conn != nil {
 		if err := o.conn.CloseWrite(); err != nil {
@@ -71,6 +76,7 @@ func (o *Output) Close() error {
 	return nil
 }
 
+// Write writes data to the TLS connection.
 func (o *Output) Write(b []byte) (int, error) {
 	return o.conn.Write(append(b, '\n'))
 }

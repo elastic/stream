@@ -2,6 +2,7 @@
 // Elasticsearch B.V. licenses this file to you under the Apache 2.0 License.
 // See the LICENSE file in the project root for more information.
 
+// Package tcp provides an output that writes data to a TCP connection.
 package tcp
 
 import (
@@ -18,15 +19,18 @@ func init() {
 	output.Register("tcp", New)
 }
 
+// Output is an output that writes to a TCP connection.
 type Output struct {
 	opts *output.Options
 	conn *net.TCPConn
 }
 
+// New creates a new TCP output.
 func New(opts *output.Options) (output.Output, error) {
 	return &Output{opts: opts}, nil
 }
 
+// DialContext dials the TCP connection.
 func (o *Output) DialContext(ctx context.Context) error {
 	d := net.Dialer{Timeout: time.Second}
 
@@ -39,10 +43,12 @@ func (o *Output) DialContext(ctx context.Context) error {
 	return nil
 }
 
+// Conn returns the underlying net.Conn.
 func (o *Output) Conn() net.Conn {
 	return o.conn
 }
 
+// Close closes the TCP connection.
 func (o *Output) Close() error {
 	if o.conn != nil {
 		if err := o.conn.CloseWrite(); err != nil {
@@ -69,6 +75,7 @@ func (o *Output) Close() error {
 	return nil
 }
 
+// Write writes data to the TCP connection.
 func (o *Output) Write(b []byte) (int, error) {
 	return o.conn.Write(append(b, '\n'))
 }
