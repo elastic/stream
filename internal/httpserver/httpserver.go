@@ -14,7 +14,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"net"
 	"net/http"
 	"os"
@@ -282,11 +282,11 @@ func newHandlerFromConfig(config *config, notFoundHandler http.HandlerFunc, logg
 			if rule.RequestBody == "" {
 				return true
 			}
-			body, err := ioutil.ReadAll(r.Body)
+			body, err := io.ReadAll(r.Body)
 			if err != nil {
 				return false
 			}
-			r.Body = ioutil.NopCloser(bytes.NewBuffer(body))
+			r.Body = io.NopCloser(bytes.NewBuffer(body))
 			if bodyRE != nil {
 				return bodyRE.Match(body)
 			}
@@ -316,7 +316,7 @@ func strRequest(r *http.Request) string {
 		b.WriteString(fmt.Sprintf("'%s: %s' ", k, v))
 	}
 	b.WriteString(", Request Body: ")
-	body, _ := ioutil.ReadAll(r.Body)
+	body, _ := io.ReadAll(r.Body)
 	b.Write(body)
 	return b.String()
 }

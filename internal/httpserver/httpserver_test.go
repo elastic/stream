@@ -9,7 +9,6 @@ import (
 	"context"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"net"
 	"net/http"
 	"os"
@@ -68,7 +67,7 @@ func TestHTTPServer(t *testing.T) {
           ` + "`" + `}}
 `
 
-	f, err := ioutil.TempFile("", "test")
+	f, err := os.CreateTemp("", "test")
 	require.NoError(t, err)
 
 	t.Cleanup(func() { os.Remove(f.Name()) })
@@ -106,7 +105,7 @@ func TestHTTPServer(t *testing.T) {
 
 		assert.Equal(t, 200, resp.StatusCode) // should work when all criteria matches
 
-		body, err := ioutil.ReadAll(resp.Body)
+		body, err := io.ReadAll(resp.Body)
 		require.NoError(t, err)
 		resp.Body.Close()
 
@@ -126,7 +125,7 @@ func TestHTTPServer(t *testing.T) {
 
 		assert.Equal(t, 200, resp.StatusCode)
 
-		body, err := ioutil.ReadAll(resp.Body)
+		body, err := io.ReadAll(resp.Body)
 		require.NoError(t, err)
 		resp.Body.Close()
 
@@ -144,7 +143,7 @@ func TestHTTPServer(t *testing.T) {
 
 		assert.Equal(t, 404, resp.StatusCode) // must fail because p2 is present
 
-		body, err := ioutil.ReadAll(resp.Body)
+		body, err := io.ReadAll(resp.Body)
 		require.NoError(t, err)
 		resp.Body.Close()
 
@@ -158,7 +157,7 @@ func TestHTTPServer(t *testing.T) {
 		resp, err := http.DefaultClient.Do(req)
 		require.NoError(t, err)
 
-		body, err := ioutil.ReadAll(resp.Body)
+		body, err := io.ReadAll(resp.Body)
 		require.NoError(t, err)
 		resp.Body.Close()
 
@@ -218,7 +217,7 @@ func TestRunAsSequence(t *testing.T) {
         {"req7": "{{ .req_num }}"}
 `
 
-	f, err := ioutil.TempFile("", "test")
+	f, err := os.CreateTemp("", "test")
 	require.NoError(t, err)
 
 	t.Cleanup(func() { os.Remove(f.Name()) })
@@ -265,7 +264,7 @@ func TestRunAsSequence(t *testing.T) {
 			require.NoError(t, err)
 			assert.Equal(t, 200, resp.StatusCode)
 
-			body, err := ioutil.ReadAll(resp.Body)
+			body, err := io.ReadAll(resp.Body)
 			require.NoError(t, err)
 			resp.Body.Close()
 
@@ -287,7 +286,7 @@ func TestRunAsSequence(t *testing.T) {
 		require.NoError(t, err)
 		assert.Equal(t, 200, resp.StatusCode)
 
-		body, err := ioutil.ReadAll(resp.Body)
+		body, err := io.ReadAll(resp.Body)
 		require.NoError(t, err)
 		resp.Body.Close()
 
@@ -318,7 +317,7 @@ func TestExitOnUnmatchedRule(t *testing.T) {
         {"req1": "{{ .req_num }}"}
 `
 
-	f, err := ioutil.TempFile("", "test")
+	f, err := os.CreateTemp("", "test")
 	require.NoError(t, err)
 
 	t.Cleanup(func() { os.Remove(f.Name()) })
