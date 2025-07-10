@@ -2,6 +2,10 @@
 // Elasticsearch B.V. licenses this file to you under the Apache 2.0 License.
 // See the LICENSE file in the project root for more information.
 
+// Package command provides the CLI interface and subcommands for the stream
+// utility. It defines the root command and all supported subcommands,
+// configuring command-line flags, argument validation, and the main entry point
+// for invoking stream's features.
 package command
 
 import (
@@ -38,6 +42,8 @@ import (
 	_ "github.com/elastic/stream/internal/output/webhook"
 )
 
+// Execute calls ExecuteContext with a context that is cancelled when
+// SIGINT is received.
 func Execute() error {
 	c := make(chan os.Signal, 1)
 	signal.Notify(c, os.Interrupt)
@@ -50,6 +56,9 @@ func Execute() error {
 	return ExecuteContext(ctx)
 }
 
+// ExecuteContext executes the stream command. It sets up the command-line
+// flags and initializes them with data from environment variables, before
+// executing the command.
 func ExecuteContext(ctx context.Context) error {
 	logger, err := log.NewLogger()
 	if err != nil {
@@ -97,10 +106,10 @@ func ExecuteContext(ctx context.Context) error {
 	rootCmd.PersistentFlags().StringVar(&opts.KafkaOptions.Topic, "kafka-topic", "test", "Kafka topic name")
 
 	// GCS output flags.
-	rootCmd.PersistentFlags().StringVar(&opts.GcsOptions.Bucket, "gcs-bucket", "testbucket", "GCS Bucket name")
-	rootCmd.PersistentFlags().StringVar(&opts.GcsOptions.Object, "gcs-object", "testobject", "GCS Object name")
-	rootCmd.PersistentFlags().StringVar(&opts.GcsOptions.ObjectContentType, "gcs-content-type", "application/json", "The Content type of the object to be uploaded to GCS.")
-	rootCmd.PersistentFlags().StringVar(&opts.GcsOptions.ProjectID, "gcs-projectid", "testproject", "GCS Project name")
+	rootCmd.PersistentFlags().StringVar(&opts.GCSOptions.Bucket, "gcs-bucket", "testbucket", "GCS Bucket name")
+	rootCmd.PersistentFlags().StringVar(&opts.GCSOptions.Object, "gcs-object", "testobject", "GCS Object name")
+	rootCmd.PersistentFlags().StringVar(&opts.GCSOptions.ObjectContentType, "gcs-content-type", "application/json", "The Content type of the object to be uploaded to GCS.")
+	rootCmd.PersistentFlags().StringVar(&opts.GCSOptions.ProjectID, "gcs-projectid", "testproject", "GCS Project name")
 
 	// Lumberjack output flags.
 	rootCmd.PersistentFlags().BoolVar(&opts.LumberjackOptions.ParseJSON, "lumberjack-parse-json", false, "Parse the input data as JSON and send the structured data as a Lumberjack batch.")

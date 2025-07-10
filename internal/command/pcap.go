@@ -38,6 +38,7 @@ func newPCAPRunner(options *output.Options, logger *zap.Logger) *cobra.Command {
 	return r.cmd
 }
 
+// Run executes the pcap command.
 func (r *pcapRunner) Run(files []string) error {
 	out, err := output.Initialize(r.out, r.logger, r.cmd.Context())
 	if err != nil {
