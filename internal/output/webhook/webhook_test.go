@@ -125,5 +125,4 @@ func TestWebhookProbe(t *testing.T) {
 			assert.Equal(t, test.probed, probed.Load())
 		})
 	}
-
 }
