@@ -39,9 +39,9 @@ type Options struct {
 	ReadTimeout         time.Duration // HTTP Server read timeout.
 	WriteTimeout        time.Duration // HTTP Server write timeout.
 	ConfigPath          string        // Config path.
-	DelayParticipation  float32       // Delay participation rate (percentage of requests that will be delayed. 0.0 <= p <= 1.0).
+	DelayParticipation  float32       // Delay participation rate (fraction of requests that will be delayed. 0.0 <= p <= 1.0).
 	DelayDuration       time.Duration // Delay duration.
-	FaultParticipation  float32       // Fault participation rate (percentage of requests that will fail. 0.0 <= p <= 1.0).
+	FaultParticipation  float32       // Fault participation rate (fraction of requests that will fail. 0.0 <= p <= 1.0).
 	FaultErrorCode      int           // Fault HTTP error code.
 	ExitOnUnmatchedRule bool          // If true it will exit if a request does not match any rule.
 }

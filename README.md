@@ -104,8 +104,8 @@ There are two types of fault injection available, and they can be used
 independently or together:
 
 1. **HTTP Error Injection**: This injects an HTTP error status code in a certain
-   percentage of responses.
-2. **Response Delay**: This adds a delay to a certain percentage of responses.
+   fraction of responses.
+2. **Response Delay**: This adds a delay to a certain fraction of responses.
 
 These fault injection settings apply to all mocked API paths that the
 `http-server` is listening on.
@@ -116,7 +116,7 @@ You can configure the server to return a specific HTTP error code for a portion
 of the requests it receives.
 
 * `--fault-rate`: A floating-point number between `0.0` and `1.0` that specifies
-  the percentage of requests that should fail. For example, a value of `0.1`
+  the fraction of requests that should fail. For example, a value of `0.1`
   means 10% of requests will receive an error. The default is `0.0` (no errors
   injected).
 * `--fault-error-code`: The HTTP status code to return for the failed requests.
@@ -134,7 +134,7 @@ You can introduce a delay in the server's response for a portion of the
 requests.
 
 * `--delay-rate`: A floating-point number between `0.0` and `1.0` that specifies
-  the percentage of requests that should be delayed. The default is `0.0` (no
+  the fraction of requests that should be delayed. The default is `0.0` (no
   delay).
 * `--delay-duration`: The duration of the delay to apply to requests (e.g.,
   `500ms`, `2s`). The default is `0s`.
