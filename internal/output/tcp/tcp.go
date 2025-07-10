@@ -77,5 +77,13 @@ func (o *Output) Close() error {
 
 // Write writes data to the TCP connection.
 func (o *Output) Write(b []byte) (int, error) {
-	return o.conn.Write(append(b, '\n'))
+	if o.conn == nil {
+		return 0, errors.New("not connected")
+	}
+
+	// Add a newline for framing.
+	buf := make([]byte, len(b)+1)
+	copy(buf, b)
+	buf[len(b)] = '\n'
+	return o.conn.Write(buf)
 }
