@@ -143,9 +143,9 @@ func ExecuteContext(ctx context.Context) error {
 	}
 
 	// Automatically set flags based on environment variables.
-	rootCmd.PersistentFlags().VisitAll(setFlagFromEnv)
+	rootCmd.PersistentFlags().VisitAll(setFlagFromEnv(logger))
 	for _, cmd := range rootCmd.Commands() {
-		cmd.PersistentFlags().VisitAll(setFlagFromEnv)
+		cmd.PersistentFlags().VisitAll(setFlagFromEnv(logger))
 	}
 
 	return rootCmd.ExecuteContext(ctx)
@@ -180,13 +180,17 @@ func waitForDelay(ctx context.Context, opts *output.Options, logger *zap.Logger)
 	return nil
 }
 
-func setFlagFromEnv(flag *pflag.Flag) {
-	envVar := strings.ToUpper(flag.Name)
-	envVar = strings.ReplaceAll(envVar, "-", "_")
-	envVar = "STREAM_" + envVar
+func setFlagFromEnv(l *zap.Logger) func(*pflag.Flag) {
+	return func(flag *pflag.Flag) {
+		envVar := strings.ToUpper(flag.Name)
+		envVar = strings.ReplaceAll(envVar, "-", "_")
+		envVar = "STREAM_" + envVar
 
-	flag.Usage = fmt.Sprintf("%v [env %v]", flag.Usage, envVar)
-	if value := os.Getenv(envVar); value != "" {
-		flag.Value.Set(value)
+		flag.Usage = fmt.Sprintf("%v [env %v]", flag.Usage, envVar)
+		if value := os.Getenv(envVar); value != "" {
+			if err := flag.Value.Set(value); err != nil {
+				l.Error("Failed to set flag from env", zap.String("env", envVar), zap.Error(err))
+			}
+		}
 	}
 }
