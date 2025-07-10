@@ -92,7 +92,6 @@ func (o *Output) createTopic() error {
 		NumPartitions:     1,
 		ReplicationFactor: 1,
 	}, false)
-
 	if err != nil {
 		return fmt.Errorf("failed to create topic: %w", err)
 	}
