@@ -137,8 +137,8 @@ func ExecuteContext(ctx context.Context) error {
 	// Add common start-up delay logic.
 	rootCmd.PersistentPreRunE = func(cmd *cobra.Command, _ []string) error {
 		return multierr.Combine(
-			waitForStartSignal(&opts, cmd.Context(), logger),
-			waitForDelay(&opts, cmd.Context(), logger),
+			waitForStartSignal(cmd.Context(), &opts, logger),
+			waitForDelay(cmd.Context(), &opts, logger),
 		)
 	}
 
@@ -151,7 +151,7 @@ func ExecuteContext(ctx context.Context) error {
 	return rootCmd.ExecuteContext(ctx)
 }
 
-func waitForStartSignal(opts *output.Options, parent context.Context, logger *zap.Logger) error {
+func waitForStartSignal(ctx context.Context, opts *output.Options, logger *zap.Logger) error {
 	if opts.StartSignal == "" {
 		return nil
 	}
@@ -163,18 +163,18 @@ func waitForStartSignal(opts *output.Options, parent context.Context, logger *za
 
 	// Wait for the signal or the command context to be done.
 	logger.Sugar().Infow("Waiting for signal.", "start-signal", opts.StartSignal)
-	startCtx, _ := osctx.WithSignal(parent, os.Signal(num))
+	startCtx, _ := osctx.WithSignal(ctx, os.Signal(num))
 	<-startCtx.Done()
 	return nil
 }
 
-func waitForDelay(opts *output.Options, parent context.Context, logger *zap.Logger) error {
+func waitForDelay(ctx context.Context, opts *output.Options, logger *zap.Logger) error {
 	if opts.Delay <= 0 {
 		return nil
 	}
 
 	logger.Sugar().Infow("Delaying connection.", "delay", opts.Delay)
-	if err := timed.Wait(parent, opts.Delay); err != nil {
+	if err := timed.Wait(ctx, opts.Delay); err != nil {
 		return fmt.Errorf("delay waiting period was interrupted: %w", err)
 	}
 	return nil
