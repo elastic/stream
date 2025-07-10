@@ -13,13 +13,13 @@ import (
 	"github.com/elastic/go-concert/timed"
 )
 
-func Initialize(opts *Options, logger *zap.SugaredLogger, ctx context.Context) (Output, error) {
 // Initialize creates and configures a new Output using the provided Options and
 // logger, then attempts to establish a connection with retries. It returns the
 // connected Output or an error if the connection could not be established within
 // the allowed retries or if the provided context is canceled. The logger is used
 // for informational and debug messages during initialization and connection
 // attempts.
+func Initialize(ctx context.Context, opts *Options, logger *zap.SugaredLogger) (Output, error) {
 	o, err := New(opts)
 	if err != nil {
 		return nil, err
