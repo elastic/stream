@@ -78,11 +78,11 @@ func (o *Output) DialContext(ctx context.Context) error {
 		}
 	}
 
-	if err := o.createTopic(); err != nil {
+	if err := o.createTopic(ctx); err != nil {
 		return err
 	}
 
-	if err := o.createSubscription(); err != nil {
+	if err := o.createSubscription(ctx); err != nil {
 		return err
 	}
 
@@ -150,10 +150,7 @@ func (o *Output) clear() error {
 	return nil
 }
 
-func (o *Output) createTopic() error {
-	ctx, cancel := context.WithCancel(context.Background())
-	defer cancel()
-
+func (o *Output) createTopic(ctx context.Context) error {
 	topic := o.client.Topic(o.opts.GCPPubsubOptions.Topic)
 	exists, err := topic.Exists(ctx)
 	if err != nil {
@@ -169,10 +166,7 @@ func (o *Output) createTopic() error {
 	return nil
 }
 
-func (o *Output) createSubscription() error {
-	ctx, cancel := context.WithCancel(context.Background())
-	defer cancel()
-
+func (o *Output) createSubscription(ctx context.Context) error {
 	sub := o.client.Subscription(o.opts.GCPPubsubOptions.Subscription)
 	exists, err := sub.Exists(ctx)
 	if err != nil {
