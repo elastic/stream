@@ -95,6 +95,7 @@ func NewClient(addr string) (gcsClient *storage.Client, ctx context.Context, can
 	if addr != "" {
 		h, err = url.Parse(addr)
 		if err != nil {
+			cancel()
 			return nil, nil, nil, err
 		}
 		h.Path = "storage/v1/"
