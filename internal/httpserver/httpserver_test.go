@@ -233,7 +233,7 @@ func TestRunAsSequence(t *testing.T) {
 	}
 
 	logger, err := log.NewLogger()
-	logger = logger.WithOptions(zap.OnFatal(zapcore.WriteThenPanic))
+	logger = logger.WithOptions(zap.WithFatalHook(zapcore.WriteThenPanic))
 	require.NoError(t, err)
 
 	t.Run("requests succeed if made in the expected order", func(t *testing.T) {
@@ -334,7 +334,7 @@ func TestExitOnUnmatchedRule(t *testing.T) {
 	}
 
 	logger, err := log.NewLogger()
-	logger = logger.WithOptions(zap.OnFatal(zapcore.WriteThenPanic))
+	logger = logger.WithOptions(zap.WithFatalHook(zapcore.WriteThenPanic))
 	require.NoError(t, err)
 
 	server, addr := startTestServer(t, &opts, logger.Sugar())
