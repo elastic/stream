@@ -14,7 +14,9 @@ require (
 	github.com/elastic/go-lumber v0.1.2-0.20220819171948-335fde24ea0f
 	github.com/elastic/go-ucfg v0.8.8
 	github.com/google/gopacket v1.1.19
+	github.com/gorilla/handlers v1.5.2
 	github.com/gorilla/mux v1.8.1
+	github.com/lingrino/go-fault v1.0.4
 	github.com/ory/dockertest/v3 v3.9.1
 	github.com/spf13/cobra v1.8.0
 	github.com/spf13/pflag v1.0.5

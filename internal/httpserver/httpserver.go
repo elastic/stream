@@ -11,11 +11,14 @@ import (
 	"io/ioutil"
 	"net"
 	"net/http"
+	"os"
 	"regexp"
 	"strings"
 	"time"
 
+	"github.com/gorilla/handlers"
 	"github.com/gorilla/mux"
+	"github.com/lingrino/go-fault"
 	"go.uber.org/zap"
 
 	"github.com/elastic/stream/internal/output"
@@ -36,6 +39,10 @@ type Options struct {
 	ReadTimeout         time.Duration // HTTP Server read timeout.
 	WriteTimeout        time.Duration // HTTP Server write timeout.
 	ConfigPath          string        // Config path.
+	DelayParticipation  float32       // Delay participation rate (fraction of requests that will be delayed. 0.0 <= p <= 1.0).
+	DelayDuration       time.Duration // Delay duration.
+	FaultParticipation  float32       // Fault participation rate (fraction of requests that will fail. 0.0 <= p <= 1.0).
+	FaultErrorCode      int           // Fault HTTP error code.
 	ExitOnUnmatchedRule bool          // If true it will exit if a request does not match any rule.
 }
 
@@ -66,6 +73,39 @@ func New(opts *Options, logger *zap.SugaredLogger) (*Server, error) {
 	if err != nil {
 		return nil, err
 	}
+
+	if opts.DelayParticipation > 0 {
+		si, err := fault.NewSlowInjector(opts.DelayDuration)
+		if err != nil {
+			return nil, err
+		}
+
+		f, err := fault.NewFault(si,
+			fault.WithEnabled(true),
+			fault.WithParticipation(opts.DelayParticipation))
+		if err != nil {
+			return nil, err
+		}
+		handler = f.Handler(handler)
+	}
+
+	if opts.FaultParticipation > 0 {
+		ei, err := fault.NewErrorInjector(opts.FaultErrorCode)
+		if err != nil {
+			return nil, err
+		}
+
+		f, err := fault.NewFault(ei,
+			fault.WithEnabled(true),
+			fault.WithParticipation(opts.FaultParticipation))
+		if err != nil {
+			return nil, err
+		}
+		handler = f.Handler(handler)
+	}
+
+	// Log all request/responses to stdout.
+	handler = handlers.CombinedLoggingHandler(os.Stdout, handler)
 
 	server := &http.Server{
 		ReadTimeout:    opts.ReadTimeout,
