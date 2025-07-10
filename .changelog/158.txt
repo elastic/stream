@@ -1,0 +1,7 @@
+```release-note:bug
+Fixes a bug in the webhook output where an error when reading the response body was ignored.
+```
+
+```release-note:bug
+Resolved a potential context leak in the GCS output by ensuring the cancel function is always called.
+```
