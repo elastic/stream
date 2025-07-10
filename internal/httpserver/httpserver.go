@@ -203,7 +203,7 @@ func newHandlerFromConfig(config *config, notFoundHandler http.HandlerFunc, logg
 				route.Queries(key, v)
 			}
 		}
-		route.MatcherFunc(func(r *http.Request, rm *mux.RouteMatch) bool {
+		route.MatcherFunc(func(r *http.Request, _ *mux.RouteMatch) bool {
 			for key := range exclude {
 				if r.URL.Query().Has(key) {
 					return false
@@ -218,7 +218,7 @@ func newHandlerFromConfig(config *config, notFoundHandler http.HandlerFunc, logg
 			}
 		}
 
-		route.MatcherFunc(func(r *http.Request, rm *mux.RouteMatch) bool {
+		route.MatcherFunc(func(r *http.Request, _ *mux.RouteMatch) bool {
 			user, password, _ := r.BasicAuth()
 			if rule.User != "" && user != rule.User {
 				return false
@@ -238,7 +238,7 @@ func newHandlerFromConfig(config *config, notFoundHandler http.HandlerFunc, logg
 				logger.Errorf("compiling body match regexp: %s", re, err)
 			}
 		}
-		route.MatcherFunc(func(r *http.Request, rm *mux.RouteMatch) bool {
+		route.MatcherFunc(func(r *http.Request, _ *mux.RouteMatch) bool {
 			if rule.RequestBody == "" {
 				return true
 			}
