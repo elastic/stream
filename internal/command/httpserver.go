@@ -26,7 +26,7 @@ func newHTTPServerRunner(options *httpserver.Options, logger *zap.Logger) *cobra
 		},
 	}
 
-	r.cmd.RunE = func(_ *cobra.Command, args []string) error {
+	r.cmd.RunE = func(_ *cobra.Command, _ []string) error {
 		r.logger = logger.Sugar().With("address", options.Addr)
 		return r.Run()
 	}

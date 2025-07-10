@@ -135,7 +135,7 @@ func ExecuteContext(ctx context.Context) error {
 	rootCmd.AddCommand(versionCmd)
 
 	// Add common start-up delay logic.
-	rootCmd.PersistentPreRunE = func(cmd *cobra.Command, args []string) error {
+	rootCmd.PersistentPreRunE = func(cmd *cobra.Command, _ []string) error {
 		return multierr.Combine(
 			waitForStartSignal(&opts, cmd.Context(), logger),
 			waitForDelay(&opts, cmd.Context(), logger),
