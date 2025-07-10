@@ -28,7 +28,7 @@ const (
 )
 
 func TestWebhook(t *testing.T) {
-	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+	ts := httptest.NewServer(http.HandlerFunc(func(_ http.ResponseWriter, r *http.Request) {
 		assert.Equal(t, secretHeaderValue, r.Header.Get("Secret"))
 
 		user, pass, ok := r.BasicAuth()
@@ -100,7 +100,7 @@ func TestWebhookProbe(t *testing.T) {
 	} {
 		t.Run(test.name, func(t *testing.T) {
 			var probed atomic.Bool
-			ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			ts := httptest.NewServer(http.HandlerFunc(func(_ http.ResponseWriter, r *http.Request) {
 				probed.Store(true)
 				if test.ok {
 					assert.Equal(t, http.MethodPost, r.Method)
