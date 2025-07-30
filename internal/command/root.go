@@ -135,6 +135,9 @@ func ExecuteContext(ctx context.Context) error {
 
 	// Automatically set flags based on environment variables.
 	rootCmd.PersistentFlags().VisitAll(setFlagFromEnv)
+	for _, cmd := range rootCmd.Commands() {
+		cmd.PersistentFlags().VisitAll(setFlagFromEnv)
+	}
 
 	return rootCmd.ExecuteContext(ctx)
 }
