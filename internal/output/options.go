@@ -6,6 +6,7 @@ package output
 
 import "time"
 
+// Options holds the configuration for an output.
 type Options struct {
 	Addr           string        // Destination address (host:port).
 	Delay          time.Duration // Delay start after start signal.
@@ -22,9 +23,10 @@ type Options struct {
 	AzureBlobStorageOptions
 	AzureEventHubOptions
 	LumberjackOptions
-	GcsOptions
+	GCSOptions
 }
 
+// WebhookOptions holds configuration for the webhook output.
 type WebhookOptions struct {
 	ContentType string        // Content-Type header.
 	Headers     []string      // Headers in Key=Value format.
@@ -34,6 +36,7 @@ type WebhookOptions struct {
 	Probe       string        // Server probe behavior.
 }
 
+// GCPPubsubOptions holds configuration for the Google Cloud Pub/Sub output.
 type GCPPubsubOptions struct {
 	Project      string // Project name.
 	Topic        string // Topic name. Will create it if not exists.
@@ -41,29 +44,39 @@ type GCPPubsubOptions struct {
 	Clear        bool   // Clear will clear all topics and subscriptions before running.
 }
 
+// KafkaOptions holds configuration for the Kafka output.
 type KafkaOptions struct {
-	Topic string // Topic name. Will create it if not exists.
+	Topic string // Topic is the Kafka topic name. It will be created if it does not exist.
 }
 
+// AzureBlobStorageOptions holds configuration for the Azure Blob Storage output.
 type AzureBlobStorageOptions struct {
-	Container string // Container name. Will create it if it does not exists.
-	Blob      string // Blob name to use, will be created inside the container.
-	Port      string // Need port number for tests, to update the connection string
+	Container string // Container is the container name. It will be created if it does not exist.
+	Blob      string // Blob is the blob name to use. It will be created inside the container.
+	Port      string // Port is the port number used for tests to update the connection string.
 }
 
+// AzureEventHubOptions holds configuration for the Azure Event Hub output.
 type AzureEventHubOptions struct {
-	FullyQualifiedNamespace string // The FullyQualifiedNamespace is the Event Hubs namespace name (ex: myeventhub.servicebus.windows.net)
-	EventHubName            string // The name of the Event hub
-	ConnectionString        string // The connection string to connect to the Event Hub
+	FullyQualifiedNamespace string // FullyQualifiedNamespace is the Event Hubs namespace name (e.g. myeventhub.servicebus.windows.net).
+	EventHubName            string // EventHubName is the name of the Event Hub.
+	ConnectionString        string // ConnectionString is the connection string to connect to the Event Hub.
 }
 
+// LumberjackOptions holds configuration for the Lumberjack output.
 type LumberjackOptions struct {
-	ParseJSON bool // Parse the input bytes as JSON and send structured data. By default, input bytes are sent in a 'message' field.
+	// ParseJSON parses the input bytes as JSON and sends structured data. By default, input bytes are sent in a 'message' field.
+	ParseJSON bool
 }
 
-type GcsOptions struct {
-	ProjectID         string // Project ID, needs to be unique with multiple buckets of the same name.
-	ObjectContentType string // The content-type set for the object that is created in the bucket, defaults to application/json
-	Bucket            string // Bucket name. Will create it if do not exist.
-	Object            string // Name of the object created inside the related Bucket.
+// GCSOptions holds configuration for the Google Cloud Storage output.
+type GCSOptions struct {
+	// ProjectID is the Google Cloud project ID.
+	ProjectID string
+	// ObjectContentType is the content-type set for the object that is created in the bucket. Defaults to application/json.
+	ObjectContentType string
+	// Bucket is the bucket name. It will be created if it does not exist.
+	Bucket string
+	// Object is the name of the object created inside the related bucket.
+	Object string
 }
