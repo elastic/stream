@@ -1,0 +1,3 @@
+```release-note:bug
+Added support for configuring command-line flags of sub-commands (such as http-server) using environment variables. For example, you can set STREAM_CONFIG=config.yml to specify a configuration file.
+```
