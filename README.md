@@ -87,6 +87,7 @@ When using [Go templates](https://golang.org/pkg/text/template/) as part of the 
 - `env KEY`: function that returns the KEY from environment.
 - `sum A B`: function that returns the sum of numbers A and B (only for integers).
 - `file PATH`: function that returns the contents of the file at PATH.
+- `glob PATTERN`: function that returns the names of all files matching PATTERN.
 - `.req_num`: variable containing the current request number, auto incremented after every request for the rule.
 - `.request.vars`: map containing the variables received in the request (both query and form).
 - `.request.url`: the url object. Can be used as per [the Go URL documentation.](https://golang.org/pkg/net/url/#URL)

@@ -1,0 +1,3 @@
+```release-note:enhancement
+http mock server: Added glob template helper function for iterating over multiple files.
+```

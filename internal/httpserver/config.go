@@ -8,6 +8,7 @@ import (
 	"encoding/json"
 	"errors"
 	"os"
+	"path/filepath"
 	"strings"
 	"text/template"
 
@@ -51,6 +52,7 @@ func (t *tpl) Unpack(in string) error {
 			"hostname":    hostname,
 			"sum":         sum,
 			"file":        file,
+			"glob":        glob,
 			"minify_json": minify,
 		}).
 		Parse(in)
@@ -100,6 +102,10 @@ func file(path string) (string, error) {
 		return "", err
 	}
 	return string(b), nil
+}
+
+func glob(pattern string) ([]string, error) {
+	return filepath.Glob(pattern)
 }
 
 func minify(body string) (string, error) {
