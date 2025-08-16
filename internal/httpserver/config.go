@@ -52,7 +52,7 @@ func (t *tpl) Unpack(in string) error {
 			"hostname":    hostname,
 			"sum":         sum,
 			"file":        file,
-			"glob":        glob,
+			"glob":        filepath.Glob,
 			"minify_json": minify,
 		}).
 		Parse(in)
@@ -102,10 +102,6 @@ func file(path string) (string, error) {
 		return "", err
 	}
 	return string(b), nil
-}
-
-func glob(pattern string) ([]string, error) {
-	return filepath.Glob(pattern)
 }
 
 func minify(body string) (string, error) {
