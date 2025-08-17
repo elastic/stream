@@ -1,4 +1,4 @@
-FROM golang:1.25.0-alpine3.21 AS builder
+FROM golang:1.25.0-alpine3.22 AS builder
 
 RUN apk add --no-cache musl-dev gcc libpcap libpcap-dev
 
@@ -11,7 +11,7 @@ RUN go mod download
 RUN go build
 
 # ------------------------------------------------------------------------------
-FROM alpine:3.21
+FROM alpine:3.22
 
 RUN apk add --no-cache libpcap
 
