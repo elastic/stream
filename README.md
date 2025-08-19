@@ -1,6 +1,6 @@
 # stream
 
-[![Build Status](https://beats-ci.elastic.co/job/Library/job/stream-mbp/job/main/badge/icon)](https://beats-ci.elastic.co/job/Library/job/stream-mbp/job/main/)
+[![Build Status](https://badge.buildkite.com/977a2bc983b5e949c022d42c56b6f50edb596f135c2fcfcbc2.svg)](https://buildkite.com/elastic/stream)
 
 stream is a test utility for streaming data via:
 
