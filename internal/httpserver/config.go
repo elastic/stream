@@ -8,6 +8,7 @@ import (
 	"encoding/json"
 	"errors"
 	"os"
+	"path/filepath"
 	"strings"
 	"text/template"
 
@@ -51,6 +52,7 @@ func (t *tpl) Unpack(in string) error {
 			"hostname":    hostname,
 			"sum":         sum,
 			"file":        file,
+			"glob":        filepath.Glob,
 			"minify_json": minify,
 		}).
 		Parse(in)
