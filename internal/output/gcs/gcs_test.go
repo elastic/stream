@@ -91,7 +91,7 @@ func TestMain(m *testing.M) {
 func TestGcs(t *testing.T) {
 	out, err := New(&output.Options{
 		Addr: emulatorHostAndPort,
-		GcsOptions: output.GcsOptions{
+		GCSOptions: output.GCSOptions{
 			Bucket: bucket,
 			Object: objectname,
 		},
