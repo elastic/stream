@@ -1,6 +1,6 @@
 # yaml-language-server: $schema=https://raw.githubusercontent.com/buildkite/pipeline-schema/main/schema.json
 env:
-  SETUP_GVM_VERSION: "v0.5.1"
+  SETUP_GVM_VERSION: "v0.6.0"
   IMAGE_UBUNTU_X86_64: "family/core-ubuntu-2204"
   DOCKER_REGISTRY: "docker.elastic.co"
   DOCKER_IMG: "${DOCKER_REGISTRY}/observability/stream"
