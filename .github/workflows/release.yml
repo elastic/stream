@@ -21,6 +21,9 @@ jobs:
     permissions:
       contents: write
     runs-on: ubuntu-latest
+    env:
+      LAST_RELEASE: ${{ inputs.last_release }}
+      VERSION: ${{ inputs.version }}
     steps:
       - uses: actions/checkout@v5
         with:
@@ -32,21 +35,21 @@ jobs:
             -changelog-template .github/release/changelog.gotmpl \
             -note-template .github/release/release-note.gotmpl \
             -entries-dir ./.changelog \
-            -last-release "${{ inputs.last_release }}" \
+            -last-release "${LAST_RELEASE}" \
             -this-release HEAD | tee /tmp/release-notes.txt
 
           cat << EOF >> /tmp/release-notes.txt
 
           DOWNLOAD:
 
-          - \`docker pull docker.elastic.co/observability/stream:${{ inputs.version }}\`
+          - \`docker pull docker.elastic.co/observability/stream:${VERSION}\`
           EOF
 
       - name: draft GH release
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          gh release create "${{ inputs.version }}" \
+          gh release create "${VERSION}" \
           --draft \
           --notes-file /tmp/release-notes.txt \
-          --title "${{ inputs.version }}"
+          --title "${VERSION}"
