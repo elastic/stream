@@ -2,6 +2,10 @@
 // Elasticsearch B.V. licenses this file to you under the Apache 2.0 License.
 // See the LICENSE file in the project root for more information.
 
+// Package command provides the CLI interface and subcommands for the stream
+// utility. It defines the root command and all supported subcommands,
+// configuring command-line flags, argument validation, and the main entry point
+// for invoking stream's features.
 package command
 
 import (
@@ -38,6 +42,8 @@ import (
 	_ "github.com/elastic/stream/internal/output/webhook"
 )
 
+// Execute calls ExecuteContext with a context that is cancelled when
+// SIGINT is received.
 func Execute() error {
 	c := make(chan os.Signal, 1)
 	signal.Notify(c, os.Interrupt)
@@ -50,6 +56,9 @@ func Execute() error {
 	return ExecuteContext(ctx)
 }
 
+// ExecuteContext executes the stream command. It sets up the command-line
+// flags and initializes them with data from environment variables, before
+// executing the command.
 func ExecuteContext(ctx context.Context) error {
 	logger, err := log.NewLogger()
 	if err != nil {
@@ -97,10 +106,10 @@ func ExecuteContext(ctx context.Context) error {
 	rootCmd.PersistentFlags().StringVar(&opts.KafkaOptions.Topic, "kafka-topic", "test", "Kafka topic name")
 
 	// GCS output flags.
-	rootCmd.PersistentFlags().StringVar(&opts.GcsOptions.Bucket, "gcs-bucket", "testbucket", "GCS Bucket name")
-	rootCmd.PersistentFlags().StringVar(&opts.GcsOptions.Object, "gcs-object", "testobject", "GCS Object name")
-	rootCmd.PersistentFlags().StringVar(&opts.GcsOptions.ObjectContentType, "gcs-content-type", "application/json", "The Content type of the object to be uploaded to GCS.")
-	rootCmd.PersistentFlags().StringVar(&opts.GcsOptions.ProjectID, "gcs-projectid", "testproject", "GCS Project name")
+	rootCmd.PersistentFlags().StringVar(&opts.GCSOptions.Bucket, "gcs-bucket", "testbucket", "GCS Bucket name")
+	rootCmd.PersistentFlags().StringVar(&opts.GCSOptions.Object, "gcs-object", "testobject", "GCS Object name")
+	rootCmd.PersistentFlags().StringVar(&opts.GCSOptions.ObjectContentType, "gcs-content-type", "application/json", "The Content type of the object to be uploaded to GCS.")
+	rootCmd.PersistentFlags().StringVar(&opts.GCSOptions.ProjectID, "gcs-projectid", "testproject", "GCS Project name")
 
 	// Lumberjack output flags.
 	rootCmd.PersistentFlags().BoolVar(&opts.LumberjackOptions.ParseJSON, "lumberjack-parse-json", false, "Parse the input data as JSON and send the structured data as a Lumberjack batch.")
@@ -126,23 +135,23 @@ func ExecuteContext(ctx context.Context) error {
 	rootCmd.AddCommand(versionCmd)
 
 	// Add common start-up delay logic.
-	rootCmd.PersistentPreRunE = func(cmd *cobra.Command, args []string) error {
+	rootCmd.PersistentPreRunE = func(cmd *cobra.Command, _ []string) error {
 		return multierr.Combine(
-			waitForStartSignal(&opts, cmd.Context(), logger),
-			waitForDelay(&opts, cmd.Context(), logger),
+			waitForStartSignal(cmd.Context(), &opts, logger),
+			waitForDelay(cmd.Context(), &opts, logger),
 		)
 	}
 
 	// Automatically set flags based on environment variables.
-	rootCmd.PersistentFlags().VisitAll(setFlagFromEnv)
+	rootCmd.PersistentFlags().VisitAll(setFlagFromEnv(logger))
 	for _, cmd := range rootCmd.Commands() {
-		cmd.PersistentFlags().VisitAll(setFlagFromEnv)
+		cmd.PersistentFlags().VisitAll(setFlagFromEnv(logger))
 	}
 
 	return rootCmd.ExecuteContext(ctx)
 }
 
-func waitForStartSignal(opts *output.Options, parent context.Context, logger *zap.Logger) error {
+func waitForStartSignal(ctx context.Context, opts *output.Options, logger *zap.Logger) error {
 	if opts.StartSignal == "" {
 		return nil
 	}
@@ -154,30 +163,34 @@ func waitForStartSignal(opts *output.Options, parent context.Context, logger *za
 
 	// Wait for the signal or the command context to be done.
 	logger.Sugar().Infow("Waiting for signal.", "start-signal", opts.StartSignal)
-	startCtx, _ := osctx.WithSignal(parent, os.Signal(num))
+	startCtx, _ := osctx.WithSignal(ctx, os.Signal(num))
 	<-startCtx.Done()
 	return nil
 }
 
-func waitForDelay(opts *output.Options, parent context.Context, logger *zap.Logger) error {
+func waitForDelay(ctx context.Context, opts *output.Options, logger *zap.Logger) error {
 	if opts.Delay <= 0 {
 		return nil
 	}
 
 	logger.Sugar().Infow("Delaying connection.", "delay", opts.Delay)
-	if err := timed.Wait(parent, opts.Delay); err != nil {
+	if err := timed.Wait(ctx, opts.Delay); err != nil {
 		return fmt.Errorf("delay waiting period was interrupted: %w", err)
 	}
 	return nil
 }
 
-func setFlagFromEnv(flag *pflag.Flag) {
-	envVar := strings.ToUpper(flag.Name)
-	envVar = strings.ReplaceAll(envVar, "-", "_")
-	envVar = "STREAM_" + envVar
+func setFlagFromEnv(l *zap.Logger) func(*pflag.Flag) {
+	return func(flag *pflag.Flag) {
+		envVar := strings.ToUpper(flag.Name)
+		envVar = strings.ReplaceAll(envVar, "-", "_")
+		envVar = "STREAM_" + envVar
 
-	flag.Usage = fmt.Sprintf("%v [env %v]", flag.Usage, envVar)
-	if value := os.Getenv(envVar); value != "" {
-		flag.Value.Set(value)
+		flag.Usage = fmt.Sprintf("%v [env %v]", flag.Usage, envVar)
+		if value := os.Getenv(envVar); value != "" {
+			if err := flag.Value.Set(value); err != nil {
+				l.Error("Failed to set flag from env", zap.String("env", envVar), zap.Error(err))
+			}
+		}
 	}
 }
