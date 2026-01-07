@@ -1,6 +1,12 @@
 // Licensed to Elasticsearch B.V. under one or more agreements.
 // Elasticsearch B.V. licenses this file to you under the Apache 2.0 License.
 // See the LICENSE file in the project root for more information.
+
+// Package gcppubsub provides an output implementation for streaming data to
+// Google Cloud Pub/Sub topics. It enables sending messages from the stream
+// utility to a specified Pub/Sub topic, optionally managing the creation and
+// clearing of topics and subscriptions. Configuration options include project,
+// topic, subscription names, and an option to clear all resources before use.
 package gcppubsub
 
 import (
@@ -21,12 +27,14 @@ func init() {
 	output.Register("gcppubsub", New)
 }
 
+// Output is a GCP Pub/Sub output.
 type Output struct {
 	opts       *output.Options
 	client     *pubsub.Client
 	cancelFunc func()
 }
 
+// New returns a new GCP Pub/Sub output.
 func New(opts *output.Options) (output.Output, error) {
 	if opts.Addr == "" {
 		return nil, errors.New("emulator address is required")
@@ -44,6 +52,7 @@ func New(opts *output.Options) (output.Output, error) {
 	return &Output{opts: opts, client: client, cancelFunc: cancel}, nil
 }
 
+// DialContext connects to the configured endpoint.
 func (o *Output) DialContext(ctx context.Context) error {
 	// Disable HTTP keep-alives to ensure no extra goroutines hang around.
 	httpClient := http.Client{Transport: &http.Transport{DisableKeepAlives: true}}
@@ -69,23 +78,25 @@ func (o *Output) DialContext(ctx context.Context) error {
 		}
 	}
 
-	if err := o.createTopic(); err != nil {
+	if err := o.createTopic(ctx); err != nil {
 		return err
 	}
 
-	if err := o.createSubscription(); err != nil {
+	if err := o.createSubscription(ctx); err != nil {
 		return err
 	}
 
 	return nil
 }
 
+// Close closes the connection to the configured endpoint.
 func (o *Output) Close() error {
 	o.client.Topic(o.opts.GCPPubsubOptions.Topic).Stop()
 	o.cancelFunc()
 	return nil
 }
 
+// Write writes data to the configured endpoint.
 func (o *Output) Write(b []byte) (int, error) {
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
@@ -139,10 +150,7 @@ func (o *Output) clear() error {
 	return nil
 }
 
-func (o *Output) createTopic() error {
-	ctx, cancel := context.WithCancel(context.Background())
-	defer cancel()
-
+func (o *Output) createTopic(ctx context.Context) error {
 	topic := o.client.Topic(o.opts.GCPPubsubOptions.Topic)
 	exists, err := topic.Exists(ctx)
 	if err != nil {
@@ -158,10 +166,7 @@ func (o *Output) createTopic() error {
 	return nil
 }
 
-func (o *Output) createSubscription() error {
-	ctx, cancel := context.WithCancel(context.Background())
-	defer cancel()
-
+func (o *Output) createSubscription(ctx context.Context) error {
 	sub := o.client.Subscription(o.opts.GCPPubsubOptions.Subscription)
 	exists, err := sub.Exists(ctx)
 	if err != nil {

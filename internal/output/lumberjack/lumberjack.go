@@ -2,6 +2,11 @@
 // Elasticsearch B.V. licenses this file to you under the Apache 2.0 License.
 // See the LICENSE file in the project root for more information.
 
+// Package lumberjack provides an output for sending events using the Lumberjack
+// protocol, which is the protocol used for communication between Elastic Beats
+// and Logstash when the "Logstash output" is used. This package implements
+// a client that connects to a Logstash or compatible server, supports plain TCP
+// and TLS, and encodes events according to the Lumberjack wire format.
 package lumberjack
 
 import (
@@ -25,6 +30,7 @@ func init() {
 	output.Register("lumberjack", New)
 }
 
+// Output is a lumberjack output.
 type Output struct {
 	opts    *output.Options
 	scheme  string
@@ -32,6 +38,7 @@ type Output struct {
 	client  *v2.SyncClient
 }
 
+// New returns a new lumberjack output.
 func New(opts *output.Options) (output.Output, error) {
 	scheme, host, port, err := splitAddress(opts.Addr)
 	if err != nil {
@@ -45,6 +52,7 @@ func New(opts *output.Options) (output.Output, error) {
 	}, nil
 }
 
+// DialContext connects to the configured endpoint.
 func (o *Output) DialContext(ctx context.Context) error {
 	var dialContextFunc func(ctx context.Context, network, address string) (net.Conn, error)
 	switch o.scheme {
@@ -76,6 +84,7 @@ func (o *Output) DialContext(ctx context.Context) error {
 	return nil
 }
 
+// Close closes the connection to the configured endpoint.
 func (o *Output) Close() error {
 	if o.client != nil {
 		return o.client.Close()
@@ -83,6 +92,7 @@ func (o *Output) Close() error {
 	return nil
 }
 
+// Write writes data to the lumberjack output.
 func (o *Output) Write(b []byte) (int, error) {
 	_, err := o.client.Send(makeBatch(b, o.opts.LumberjackOptions.ParseJSON))
 	if err != nil {

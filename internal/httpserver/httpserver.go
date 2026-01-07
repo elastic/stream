@@ -1,6 +1,12 @@
 // Licensed to Elasticsearch B.V. under one or more agreements.
 // Elasticsearch B.V. licenses this file to you under the Apache 2.0 License.
 // See the LICENSE file in the project root for more information.
+
+// Package httpserver provides a configurable mock HTTP server for testing and
+// development purposes. It allows users to define request matching rules and
+// dynamic templated responses via configuration files. Features include support
+// for request sequencing, custom headers, authentication, TLS, and advanced
+// response templating.
 package httpserver
 
 import (
@@ -8,7 +14,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"net"
 	"net/http"
 	"os"
@@ -24,6 +30,7 @@ import (
 	"github.com/elastic/stream/internal/output"
 )
 
+// Server is an HTTP server for mocking HTTP responses.
 type Server struct {
 	logger   *zap.SugaredLogger
 	opts     *Options
@@ -32,6 +39,7 @@ type Server struct {
 	ctx      context.Context
 }
 
+// Options are the options for the HTTP server.
 type Options struct {
 	*output.Options
 	TLSCertificate      string        // TLS certificate file path.
@@ -46,13 +54,14 @@ type Options struct {
 	ExitOnUnmatchedRule bool          // If true it will exit if a request does not match any rule.
 }
 
+// New creates a new HTTP server.
 func New(opts *Options, logger *zap.SugaredLogger) (*Server, error) {
 	if opts.Addr == "" {
 		return nil, errors.New("a listen address is required")
 	}
 
-	if !(opts.TLSCertificate == "" && opts.TLSKey == "") &&
-		!(opts.TLSCertificate != "" && opts.TLSKey != "") {
+	if (opts.TLSCertificate != "" || opts.TLSKey != "") &&
+		(opts.TLSCertificate == "" || opts.TLSKey == "") {
 		return nil, errors.New("both TLS certificate and key files must be defined")
 	}
 
@@ -121,6 +130,7 @@ func New(opts *Options, logger *zap.SugaredLogger) (*Server, error) {
 	}, nil
 }
 
+// Start starts the HTTP server.
 func (o *Server) Start(ctx context.Context) error {
 	o.ctx = ctx
 
@@ -144,6 +154,8 @@ func (o *Server) Start(ctx context.Context) error {
 	return nil
 }
 
+// Close gracefully shuts down the server without interrupting any
+// active connections.
 func (o *Server) Close() error {
 	o.logger.Info("shutting down http-server...")
 
@@ -231,7 +243,7 @@ func newHandlerFromConfig(config *config, notFoundHandler http.HandlerFunc, logg
 				route.Queries(key, v)
 			}
 		}
-		route.MatcherFunc(func(r *http.Request, rm *mux.RouteMatch) bool {
+		route.MatcherFunc(func(r *http.Request, _ *mux.RouteMatch) bool {
 			for key := range exclude {
 				if r.URL.Query().Has(key) {
 					return false
@@ -246,7 +258,7 @@ func newHandlerFromConfig(config *config, notFoundHandler http.HandlerFunc, logg
 			}
 		}
 
-		route.MatcherFunc(func(r *http.Request, rm *mux.RouteMatch) bool {
+		route.MatcherFunc(func(r *http.Request, _ *mux.RouteMatch) bool {
 			user, password, _ := r.BasicAuth()
 			if rule.User != "" && user != rule.User {
 				return false
@@ -266,15 +278,15 @@ func newHandlerFromConfig(config *config, notFoundHandler http.HandlerFunc, logg
 				logger.Errorf("compiling body match regexp: %s", re, err)
 			}
 		}
-		route.MatcherFunc(func(r *http.Request, rm *mux.RouteMatch) bool {
+		route.MatcherFunc(func(r *http.Request, _ *mux.RouteMatch) bool {
 			if rule.RequestBody == "" {
 				return true
 			}
-			body, err := ioutil.ReadAll(r.Body)
+			body, err := io.ReadAll(r.Body)
 			if err != nil {
 				return false
 			}
-			r.Body = ioutil.NopCloser(bytes.NewBuffer(body))
+			r.Body = io.NopCloser(bytes.NewBuffer(body))
 			if bodyRE != nil {
 				return bodyRE.Match(body)
 			}
@@ -304,7 +316,7 @@ func strRequest(r *http.Request) string {
 		b.WriteString(fmt.Sprintf("'%s: %s' ", k, v))
 	}
 	b.WriteString(", Request Body: ")
-	body, _ := ioutil.ReadAll(r.Body)
+	body, _ := io.ReadAll(r.Body)
 	b.Write(body)
 	return b.String()
 }

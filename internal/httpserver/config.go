@@ -44,6 +44,9 @@ type tpl struct {
 	*template.Template
 }
 
+// Unpack implements the go-ucfg StringUnpacker interface for tpl. It parses the
+// provided string as a Go template, registering custom helper functions for use
+// within the template, and assigns the resulting template to the receiver.
 func (t *tpl) Unpack(in string) error {
 	parsed, err := template.New("").
 		Option("missingkey=zero").

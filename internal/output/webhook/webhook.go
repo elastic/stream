@@ -2,6 +2,12 @@
 // Elasticsearch B.V. licenses this file to you under the Apache 2.0 License.
 // See the LICENSE file in the project root for more information.
 
+// Package webhook provides an output that sends data to an HTTP or HTTPS
+// endpoint via configurable webhooks. It supports customizable HTTP headers,
+// basic authentication, custom content types, and configurable TLS settings for
+// secure communication. This package is intended to enable sending events or log
+// lines to web services that accept data over HTTP, often used for integrations
+// or alerting.
 package webhook
 
 import (
@@ -21,11 +27,13 @@ func init() {
 	output.Register("webhook", New)
 }
 
+// Output is a webhook output.
 type Output struct {
 	opts   *output.Options
 	client *http.Client
 }
 
+// New returns a new webhook output.
 func New(opts *output.Options) (output.Output, error) {
 	if _, err := url.Parse(opts.Addr); err != nil {
 		return nil, fmt.Errorf("address must be a valid URL for webhook output: %w", err)
@@ -46,6 +54,7 @@ func New(opts *output.Options) (output.Output, error) {
 	return &Output{opts: opts, client: client}, nil
 }
 
+// DialContext connects to the configured endpoint.
 func (o *Output) DialContext(ctx context.Context) error {
 	method := o.opts.WebhookOptions.Probe
 	switch method {
@@ -84,11 +93,13 @@ func (o *Output) DialContext(ctx context.Context) error {
 	return nil
 }
 
+// Close closes the connection to the configured endpoint.
 func (o *Output) Close() error {
 	o.client.CloseIdleConnections()
 	return nil
 }
 
+// Write writes data to the configured endpoint.
 func (o *Output) Write(b []byte) (int, error) {
 	req, err := http.NewRequest(http.MethodPost, o.opts.Addr, bytes.NewReader(b))
 	if err != nil {
@@ -110,7 +121,9 @@ func (o *Output) Write(b []byte) (int, error) {
 		return 0, err
 	}
 	var buf bytes.Buffer
-	io.Copy(&buf, resp.Body)
+	if _, err = io.Copy(&buf, resp.Body); err != nil {
+		return 0, fmt.Errorf("failed to read response body: %w", err)
+	}
 	defer resp.Body.Close()
 
 	if resp.StatusCode != http.StatusOK {

@@ -1,6 +1,13 @@
 // Licensed to Elasticsearch B.V. under one or more agreements.
 // Elasticsearch B.V. licenses this file to you under the Apache 2.0 License.
 // See the LICENSE file in the project root for more information.
+
+// Package azureeventhub provides an output implementation for streaming data to
+// Azure Event Hub. It encapsulates the logic for connecting to an Event Hub
+// instance, authenticating using either connection strings or environment
+// credentials, batching events, and sending data. This output enables
+// integration with Azure's scalable event ingestion platform for analytics,
+// telemetry, and streaming workloads.
 package azureeventhub
 
 import (
@@ -17,6 +24,7 @@ func init() {
 	output.Register("azureeventhub", New)
 }
 
+// Output is an azureeventhub output.
 type Output struct {
 	opts           *output.Options
 	producerClient *azeventhubs.ProducerClient
@@ -24,6 +32,7 @@ type Output struct {
 	cancelCtx      context.Context
 }
 
+// New returns a new azureeventhub output.
 func New(opts *output.Options) (output.Output, error) {
 	var producerClient *azeventhubs.ProducerClient
 	var err error
@@ -51,16 +60,19 @@ func New(opts *output.Options) (output.Output, error) {
 	return &Output{opts: opts, producerClient: producerClient, cancelFunc: cancel, cancelCtx: ctx}, nil
 }
 
+// DialContext connects to the configured endpoint.
 func (*Output) DialContext(_ context.Context) error {
 	return nil
 }
 
+// Close closes the connection to the configured endpoint.
 func (o *Output) Close() error {
 	o.producerClient.Close(o.cancelCtx)
 	o.cancelFunc()
 	return nil
 }
 
+// Write writes data to the configured endpoint.
 func (o *Output) Write(b []byte) (int, error) {
 	batch, err := o.producerClient.NewEventDataBatch(o.cancelCtx, nil)
 	if err != nil {
