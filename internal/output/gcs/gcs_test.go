@@ -24,7 +24,7 @@ import (
 )
 
 const (
-	emulatorHost = "localhost"
+	emulatorHost = "127.0.0.1"
 	emulatorPort = "4443"
 	bucket       = "testbucket"
 	objectname   = "testobject"
