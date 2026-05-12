@@ -2,6 +2,7 @@
 // Elasticsearch B.V. licenses this file to you under the Apache 2.0 License.
 // See the LICENSE file in the project root for more information.
 
+// Package unix provides an output for writing to unix sockets
 package unix
 
 import (
@@ -18,15 +19,18 @@ func init() {
 	output.Register("unix", New)
 }
 
+// Output holds options and connection
 type Output struct {
 	opts *output.Options
 	conn *net.UnixConn
 }
 
+// New creates a new unix output
 func New(opts *output.Options) (output.Output, error) {
 	return &Output{opts: opts}, nil
 }
 
+// DialContext connects to the address in the Output struct using the supplied context
 func (o *Output) DialContext(ctx context.Context) error {
 	d := net.Dialer{Timeout: time.Second}
 
@@ -39,10 +43,12 @@ func (o *Output) DialContext(ctx context.Context) error {
 	return nil
 }
 
+// Conn returns the connection
 func (o *Output) Conn() net.Conn {
 	return o.conn
 }
 
+// Close gracefully closes the connection
 func (o *Output) Close() error {
 	if o.conn != nil {
 		if err := o.conn.CloseWrite(); err != nil {
@@ -69,6 +75,9 @@ func (o *Output) Close() error {
 	return nil
 }
 
+// Write the supplied bytes to the connection and appends a newline
+// character.  The adding of the newline character is to behave the
+// same as the tcp output.
 func (o *Output) Write(b []byte) (int, error) {
-	return o.conn.Write(append(b, '\n'))
+	return o.conn.Write(append(b, '\n')) //nolint:staticcheck  // convention established in tcp output
 }
