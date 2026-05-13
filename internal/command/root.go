@@ -35,6 +35,7 @@ import (
 	_ "github.com/elastic/stream/internal/output/tcp"
 	_ "github.com/elastic/stream/internal/output/tls"
 	_ "github.com/elastic/stream/internal/output/udp"
+	_ "github.com/elastic/stream/internal/output/unix"
 	_ "github.com/elastic/stream/internal/output/webhook"
 )
 
