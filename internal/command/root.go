@@ -32,10 +32,7 @@ import (
 	_ "github.com/elastic/stream/internal/output/gcs"
 	_ "github.com/elastic/stream/internal/output/kafka"
 	_ "github.com/elastic/stream/internal/output/lumberjack"
-	_ "github.com/elastic/stream/internal/output/tcp"
-	_ "github.com/elastic/stream/internal/output/tls"
-	_ "github.com/elastic/stream/internal/output/udp"
-	_ "github.com/elastic/stream/internal/output/unix"
+	_ "github.com/elastic/stream/internal/output/net"
 	_ "github.com/elastic/stream/internal/output/webhook"
 )
 
