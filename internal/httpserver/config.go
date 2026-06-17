@@ -7,10 +7,12 @@ package httpserver
 import (
 	"encoding/json"
 	"errors"
+	"fmt"
 	"os"
 	"path/filepath"
 	"strings"
 	"text/template"
+	"time"
 
 	ucfg "github.com/elastic/go-ucfg"
 	"github.com/elastic/go-ucfg/yaml"
@@ -54,6 +56,7 @@ func (t *tpl) Unpack(in string) error {
 			"file":        file,
 			"glob":        filepath.Glob,
 			"minify_json": minify,
+			"now":         now,
 		}).
 		Parse(in)
 	if err != nil {
@@ -110,4 +113,20 @@ func minify(body string) (string, error) {
 	enc.SetEscapeHTML(false)
 	err := enc.Encode(json.RawMessage(body))
 	return strings.TrimSpace(buf.String()), err
+}
+
+// now returns the current UTC time. An optional Go duration string
+// offsets the result (e.g. "-720h" for 30 days ago). The returned
+// time.Time value exposes its methods to templates, so callers can
+// format it as needed: {{ (now).Format "2006-01-02" }}.
+func now(offset ...string) (time.Time, error) {
+	t := time.Now().UTC()
+	if len(offset) == 0 {
+		return t, nil
+	}
+	d, err := time.ParseDuration(offset[0])
+	if err != nil {
+		return time.Time{}, fmt.Errorf("invalid duration %q: %w", offset[0], err)
+	}
+	return t.Add(d), nil
 }
