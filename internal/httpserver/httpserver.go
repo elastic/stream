@@ -193,6 +193,7 @@ func newHandlerFromConfig(config *config, notFoundHandler http.HandlerFunc, logg
 			data := map[string]interface{}{
 				"req_num": count,
 				"request": map[string]interface{}{
+					"host":    r.Host,
 					"vars":    mux.Vars(r),
 					"url":     r.URL,
 					"headers": r.Header,

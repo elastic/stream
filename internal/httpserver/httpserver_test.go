@@ -14,6 +14,7 @@ import (
 	"net"
 	"net/http"
 	"os"
+	"strings"
 	"testing"
 	"time"
 
@@ -84,6 +85,17 @@ func TestHTTPServer(t *testing.T) {
       - status_code: 200
         body: |-
           {"ts": "{{ (now "-720h").Format "2006-01-02T15:04:05Z07:00" }}"}
+
+    - path: "/orgs/test/audit-log"
+      methods: ["GET"]
+
+      responses:
+      - status_code: 200
+        headers:
+          Link:
+            - '<http://{{ .request.host }}/orgs/test/audit-log?after=abcd>; rel="next"'
+        body: |-
+          []
 `
 
 	f, err := ioutil.TempFile("", "test")
@@ -213,6 +225,39 @@ func TestHTTPServer(t *testing.T) {
 		}
 		if got.Before(before.Add(-time.Second)) || got.After(time.Now().UTC().Add(time.Second)) {
 			t.Errorf("now() = %s; want between %s and now", got, before)
+		}
+	})
+
+	t.Run("request host is available in response templates", func(t *testing.T) {
+		host := "svc-github" + addr[strings.LastIndex(addr, ":"):]
+		req, err := http.NewRequest("GET", "http://"+addr+"/orgs/test/audit-log", nil)
+		if err != nil {
+			t.Fatalf("NewRequest error: %v", err)
+		}
+		req.Host = host
+
+		resp, err := http.DefaultClient.Do(req)
+		if err != nil {
+			t.Fatalf("Do error: %v", err)
+		}
+
+		if resp.StatusCode != 200 {
+			t.Fatalf("StatusCode = %d; want 200", resp.StatusCode)
+		}
+
+		wantLink := fmt.Sprintf(`<http://%s/orgs/test/audit-log?after=abcd>; rel="next"`, host)
+		if got := resp.Header.Get("Link"); got != wantLink {
+			t.Fatalf("Link header = %q; want %q", got, wantLink)
+		}
+
+		body, err := io.ReadAll(resp.Body)
+		if err != nil {
+			t.Fatalf("ReadAll error: %v", err)
+		}
+		resp.Body.Close()
+
+		if got := string(body); got != "[]" {
+			t.Fatalf("body = %q; want %q", got, "[]")
 		}
 	})
 
