@@ -85,7 +85,6 @@ func (r *pcapRunner) sendPCAP(path string, out output.Output) error {
 
 		payloadData := tl.LayerPayload()
 
-		// TODO: Rate-limit for UDP.
 		n, err := out.Write(payloadData)
 		if err != nil {
 			return err

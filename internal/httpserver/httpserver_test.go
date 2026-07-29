@@ -7,12 +7,15 @@ package httpserver
 import (
 	"bytes"
 	"context"
+	"encoding/json"
 	"fmt"
 	"io"
 	"net"
 	"net/http"
 	"os"
+	"strings"
 	"testing"
+	"time"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -65,6 +68,33 @@ func TestHTTPServer(t *testing.T) {
           	"key2": "<value2>"
           }
           ` + "`" + `}}
+
+    - path: "/time/now"
+      methods: ["GET"]
+
+      responses:
+      - status_code: 200
+        body: |-
+          {"ts": "{{ (now).Format "2006-01-02T15:04:05Z07:00" }}"}
+
+    - path: "/time/offset"
+      methods: ["GET"]
+
+      responses:
+      - status_code: 200
+        body: |-
+          {"ts": "{{ (now "-720h").Format "2006-01-02T15:04:05Z07:00" }}"}
+
+    - path: "/orgs/test/audit-log"
+      methods: ["GET"]
+
+      responses:
+      - status_code: 200
+        headers:
+          Link:
+            - '<http://{{ .request.host }}/orgs/test/audit-log?after=abcd>; rel="next"'
+        body: |-
+          []
 `
 
 	f, err := os.CreateTemp("", "test")
@@ -162,6 +192,150 @@ func TestHTTPServer(t *testing.T) {
 		resp.Body.Close()
 
 		assert.Equal(t, `{"key1":"value1","key2":"<value2>"}`, string(body))
+	})
+
+	t.Run("now returns current time", func(t *testing.T) {
+		before := time.Now().UTC()
+
+		req, err := http.NewRequest("GET", "http://"+addr+"/time/now", nil)
+		if err != nil {
+			t.Fatalf("NewRequest error: %v", err)
+		}
+
+		resp, err := http.DefaultClient.Do(req)
+		if err != nil {
+			t.Fatalf("Do error: %v", err)
+		}
+
+		body, err := io.ReadAll(resp.Body)
+		if err != nil {
+			t.Fatalf("ReadAll error: %v", err)
+		}
+		resp.Body.Close()
+
+		// Extract the timestamp from {"ts": "2026-06-17T05:30:00Z"}.
+		var result struct {
+			TS string `json:"ts"`
+		}
+		if err := json.Unmarshal(body, &result); err != nil {
+			t.Fatalf("Unmarshal(%s) error: %v", body, err)
+		}
+		got, err := time.Parse(time.RFC3339, result.TS)
+		if err != nil {
+			t.Fatalf("time.Parse(%q) error: %v", result.TS, err)
+		}
+		if got.Before(before.Add(-time.Second)) || got.After(time.Now().UTC().Add(time.Second)) {
+			t.Errorf("now() = %s; want between %s and now", got, before)
+		}
+	})
+
+	t.Run("request host is available in response templates", func(t *testing.T) {
+		host := "svc-github" + addr[strings.LastIndex(addr, ":"):]
+		req, err := http.NewRequest("GET", "http://"+addr+"/orgs/test/audit-log", nil)
+		if err != nil {
+			t.Fatalf("NewRequest error: %v", err)
+		}
+		req.Host = host
+
+		resp, err := http.DefaultClient.Do(req)
+		if err != nil {
+			t.Fatalf("Do error: %v", err)
+		}
+
+		if resp.StatusCode != 200 {
+			t.Fatalf("StatusCode = %d; want 200", resp.StatusCode)
+		}
+
+		wantLink := fmt.Sprintf(`<http://%s/orgs/test/audit-log?after=abcd>; rel="next"`, host)
+		if got := resp.Header.Get("Link"); got != wantLink {
+			t.Fatalf("Link header = %q; want %q", got, wantLink)
+		}
+
+		body, err := io.ReadAll(resp.Body)
+		if err != nil {
+			t.Fatalf("ReadAll error: %v", err)
+		}
+		resp.Body.Close()
+
+		if got := string(body); got != "[]" {
+			t.Fatalf("body = %q; want %q", got, "[]")
+		}
+	})
+
+	t.Run("now with offset", func(t *testing.T) {
+		before := time.Now().UTC().Add(-720 * time.Hour)
+
+		req, err := http.NewRequest("GET", "http://"+addr+"/time/offset", nil)
+		if err != nil {
+			t.Fatalf("NewRequest error: %v", err)
+		}
+
+		resp, err := http.DefaultClient.Do(req)
+		if err != nil {
+			t.Fatalf("Do error: %v", err)
+		}
+
+		body, err := io.ReadAll(resp.Body)
+		if err != nil {
+			t.Fatalf("ReadAll error: %v", err)
+		}
+		resp.Body.Close()
+
+		var result struct {
+			TS string `json:"ts"`
+		}
+		if err := json.Unmarshal(body, &result); err != nil {
+			t.Fatalf("Unmarshal(%s) error: %v", body, err)
+		}
+		got, err := time.Parse(time.RFC3339, result.TS)
+		if err != nil {
+			t.Fatalf("time.Parse(%q) error: %v", result.TS, err)
+		}
+		if got.Before(before.Add(-time.Second)) || got.After(before.Add(time.Second)) {
+			t.Errorf("now(\"-720h\") = %s; want within 1s of %s", got, before)
+		}
+	})
+}
+
+func TestNow(t *testing.T) {
+	t.Run("no offset", func(t *testing.T) {
+		before := time.Now().UTC()
+		got, err := now()
+		if err != nil {
+			t.Fatalf("now() error: %v", err)
+		}
+		if got.Before(before.Add(-time.Second)) || got.After(time.Now().UTC().Add(time.Second)) {
+			t.Errorf("now() = %s; want within 1s of current time", got)
+		}
+	})
+
+	t.Run("negative offset", func(t *testing.T) {
+		before := time.Now().UTC().Add(-24 * time.Hour)
+		got, err := now("-24h")
+		if err != nil {
+			t.Fatalf("now(%q) error: %v", "-24h", err)
+		}
+		if got.Before(before.Add(-time.Second)) || got.After(before.Add(time.Second)) {
+			t.Errorf("now(%q) = %s; want within 1s of %s", "-24h", got, before)
+		}
+	})
+
+	t.Run("positive offset", func(t *testing.T) {
+		expected := time.Now().UTC().Add(2 * time.Hour)
+		got, err := now("2h")
+		if err != nil {
+			t.Fatalf("now(%q) error: %v", "2h", err)
+		}
+		if got.Before(expected.Add(-time.Second)) || got.After(expected.Add(time.Second)) {
+			t.Errorf("now(%q) = %s; want within 1s of %s", "2h", got, expected)
+		}
+	})
+
+	t.Run("invalid offset", func(t *testing.T) {
+		_, err := now("bogus")
+		if err == nil {
+			t.Error("now(\"bogus\") error = nil; want error")
+		}
 	})
 }
 

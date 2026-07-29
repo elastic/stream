@@ -24,7 +24,7 @@ import (
 )
 
 const (
-	emulatorHost = "localhost"
+	emulatorHost = "127.0.0.1"
 	emulatorPort = "4443"
 	bucket       = "testbucket"
 	objectname   = "testobject"
@@ -41,7 +41,7 @@ func TestMain(m *testing.M) {
 	resource, err := pool.RunWithOptions(&dockertest.RunOptions{
 		Repository: "fsouza/fake-gcs-server",
 		Tag:        "latest",
-		Cmd:        []string{"-host=0.0.0.0", "-public-host=localhost", fmt.Sprintf("-port=%s", emulatorPort), "-scheme=http"},
+		Cmd:        []string{"-host=0.0.0.0", fmt.Sprintf("-public-host=%s", emulatorHost), fmt.Sprintf("-port=%s", emulatorPort), "-scheme=http"},
 		PortBindings: map[docker.Port][]docker.PortBinding{
 			emulatorPort: {{HostIP: emulatorHost, HostPort: emulatorPort}},
 		},
