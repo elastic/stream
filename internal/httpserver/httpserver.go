@@ -315,7 +315,7 @@ func strRequest(r *http.Request) string {
 	b.WriteString(r.URL.String())
 	b.WriteString(", Request Headers: ")
 	for k, v := range r.Header {
-		b.WriteString(fmt.Sprintf("'%s: %s' ", k, v))
+		fmt.Fprintf(&b, "'%s: %s' ", k, v)
 	}
 	b.WriteString(", Request Body: ")
 	body, _ := io.ReadAll(r.Body)

@@ -1,8 +1,8 @@
 LICENSE := ASL2-Short
 VERSION ?= local
 
-GOLANGCI_LINT:= go run github.com/golangci/golangci-lint/v2/cmd/golangci-lint
-GOLICENSER := go run github.com/elastic/go-licenser
+GOLANGCI_LINT := go run github.com/golangci/golangci-lint/v2/cmd/golangci-lint@v2.12.2
+GOLICENSER := go run github.com/elastic/go-licenser@v0.4.2
 
 check-fmt:
 	@${GOLICENSER} -d -license ${LICENSE}
