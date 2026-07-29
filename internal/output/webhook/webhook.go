@@ -120,11 +120,12 @@ func (o *Output) Write(b []byte) (int, error) {
 	if err != nil {
 		return 0, err
 	}
+	defer resp.Body.Close()
+
 	var buf bytes.Buffer
 	if _, err = io.Copy(&buf, resp.Body); err != nil {
 		return 0, fmt.Errorf("failed to read response body: %w", err)
 	}
-	defer resp.Body.Close()
 
 	if resp.StatusCode != http.StatusOK {
 		if buf.Len() == 0 {

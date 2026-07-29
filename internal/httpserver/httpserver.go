@@ -60,8 +60,9 @@ func New(opts *Options, logger *zap.SugaredLogger) (*Server, error) {
 		return nil, errors.New("a listen address is required")
 	}
 
-	if (opts.TLSCertificate != "" || opts.TLSKey != "") &&
-		(opts.TLSCertificate == "" || opts.TLSKey == "") {
+	certIsZero := opts.TLSCertificate == ""
+	keyIsZero := opts.TLSKey == ""
+	if certIsZero != keyIsZero {
 		return nil, errors.New("both TLS certificate and key files must be defined")
 	}
 

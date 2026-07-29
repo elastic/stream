@@ -130,8 +130,5 @@ func (o *Output) Write(b []byte) (int, error) {
 		return o.conn.Write(b)
 	}
 
-	buf := make([]byte, len(b)+1)
-	copy(buf, b)
-	buf[len(b)] = '\n'
-	return o.conn.Write(buf)
+	return o.conn.Write(append(b[:len(b):len(b)], '\n'))
 }

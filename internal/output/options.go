@@ -38,21 +38,21 @@ type WebhookOptions struct {
 
 // GCPPubsubOptions holds configuration for the Google Cloud Pub/Sub output.
 type GCPPubsubOptions struct {
-	Project      string // Project name.
-	Topic        string // Topic name. Will create it if not exists.
-	Subscription string // Subscription name. Will create it if not exists.
-	Clear        bool   // Clear will clear all topics and subscriptions before running.
+	Project      string // Project is the Google Cloud project name.
+	Topic        string // Topic is the Pub/Sub topic name. The topic will be created if it does not exist.
+	Subscription string // Subscription is the Pub/Sub subscription name. The subscription will be created if it does not exist.
+	Clear        bool   // Clear removes all topics and subscriptions before running.
 }
 
 // KafkaOptions holds configuration for the Kafka output.
 type KafkaOptions struct {
-	Topic string // Topic is the Kafka topic name. It will be created if it does not exist.
+	Topic string // Topic is the Kafka topic name. The topic will be created if it does not exist.
 }
 
 // AzureBlobStorageOptions holds configuration for the Azure Blob Storage output.
 type AzureBlobStorageOptions struct {
-	Container string // Container is the container name. It will be created if it does not exist.
-	Blob      string // Blob is the blob name to use. It will be created inside the container.
+	Container string // Container is the container name. The container will be created if it does not exist.
+	Blob      string // Blob is the blob name to use. The blob will be created inside the container.
 	Port      string // Port is the port number used for tests to update the connection string.
 }
 
@@ -75,7 +75,7 @@ type GCSOptions struct {
 	ProjectID string
 	// ObjectContentType is the content-type set for the object that is created in the bucket. Defaults to application/json.
 	ObjectContentType string
-	// Bucket is the bucket name. It will be created if it does not exist.
+	// Bucket is the bucket name. The bucket will be created if it does not exist.
 	Bucket string
 	// Object is the name of the object created inside the related bucket.
 	Object string

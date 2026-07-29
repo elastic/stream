@@ -90,10 +90,16 @@ func TestTCPWrite(t *testing.T) {
 	require.NoError(t, err)
 	require.NoError(t, out.DialContext(context.Background()))
 
-	msg := []byte("hello tcp")
+	const message = "hello tcp"
+	msg := make([]byte, len(message), len(message)+1)
+	copy(msg, message)
+	backing := msg[:cap(msg)]
+	backing[len(msg)] = 0xff
+
 	_, err = out.Write(msg)
 	require.NoError(t, err)
-	assert.Equal(t, append(msg, '\n'), <-ch)
+	assert.Equal(t, append([]byte(message), '\n'), <-ch)
+	assert.Equal(t, byte(0xff), backing[len(msg)], "Write modified the input buffer")
 }
 
 func TestTCPCloseWithoutDial(t *testing.T) {
