@@ -58,7 +58,11 @@ func (o *Output) DialContext(ctx context.Context) error {
 	httpClient := http.Client{Transport: &http.Transport{DisableKeepAlives: true}}
 
 	// Sanity check the emulator.
-	resp, err := httpClient.Get("http://" + o.opts.Addr)
+	req, err := http.NewRequestWithContext(ctx, http.MethodGet, "http://"+o.opts.Addr, nil)
+	if err != nil {
+		return err
+	}
+	resp, err := httpClient.Do(req)
 	if err != nil {
 		return err
 	}
@@ -73,7 +77,7 @@ func (o *Output) DialContext(ctx context.Context) error {
 	}
 
 	if o.opts.GCPPubsubOptions.Clear {
-		if err := o.clear(); err != nil {
+		if err := o.clear(ctx); err != nil {
 			return err
 		}
 	}
@@ -112,10 +116,7 @@ func (o *Output) Write(b []byte) (int, error) {
 	return len(b), nil
 }
 
-func (o *Output) clear() error {
-	ctx, cancel := context.WithCancel(context.Background())
-	defer cancel()
-
+func (o *Output) clear(ctx context.Context) error {
 	// Clear all topics.
 	topics := o.client.Topics(ctx)
 	for {
