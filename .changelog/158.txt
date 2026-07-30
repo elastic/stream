@@ -1,0 +1,7 @@
+```release-note:bug
+Fixes a bug in the webhook output where an error when reading the response body was ignored.
+```
+
+```release-note:bug
+Use the caller's context to initialize GCS while allowing pending writes to finish during close.
+```

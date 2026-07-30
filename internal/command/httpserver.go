@@ -26,7 +26,7 @@ func newHTTPServerRunner(options *httpserver.Options, logger *zap.Logger) *cobra
 		},
 	}
 
-	r.cmd.RunE = func(_ *cobra.Command, args []string) error {
+	r.cmd.RunE = func(_ *cobra.Command, _ []string) error {
 		r.logger = logger.Sugar().With("address", options.Addr)
 		return r.Run()
 	}
@@ -34,6 +34,7 @@ func newHTTPServerRunner(options *httpserver.Options, logger *zap.Logger) *cobra
 	return r.cmd
 }
 
+// Run executes the http-server command.
 func (r *httpServerRunner) Run() error {
 	r.logger.Debug("mock server running...")
 	server, err := httpserver.New(r.opts, r.logger)

@@ -2,6 +2,9 @@
 // Elasticsearch B.V. licenses this file to you under the Apache 2.0 License.
 // See the LICENSE file in the project root for more information.
 
+// Package cmdutil provides utility functions and argument validators
+// to facilitate the creation and validation of CLI command arguments
+// when using the spf13/cobra library.
 package cmdutil
 
 import (
@@ -42,6 +45,10 @@ func RegularFiles(_ *cobra.Command, args []string) error {
 	return nil
 }
 
+// ExpandGlobPatternsFromArgs expands each argument in args as a glob pattern,
+// returning a slice containing all matching file paths. If any pattern is
+// invalid, an error is returned. Patterns that do not match any files are
+// silently ignored.
 func ExpandGlobPatternsFromArgs(args []string) ([]string, error) {
 	var paths []string
 	for _, pat := range args {

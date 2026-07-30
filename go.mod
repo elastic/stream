@@ -10,7 +10,6 @@ require (
 	github.com/Azure/azure-sdk-for-go/sdk/storage/azblob v1.3.1
 	github.com/IBM/sarama v1.45.1
 	github.com/elastic/go-concert v0.2.0
-	github.com/elastic/go-licenser v0.4.1
 	github.com/elastic/go-lumber v0.1.2-0.20220819171948-335fde24ea0f
 	github.com/elastic/go-ucfg v0.8.8
 	github.com/google/gopacket v1.1.19
@@ -25,7 +24,6 @@ require (
 	go.uber.org/zap v1.27.0
 	golang.org/x/sys v0.39.0
 	golang.org/x/time v0.5.0
-	golang.org/x/tools v0.39.0
 	google.golang.org/api v0.170.0
 	gotest.tools v2.2.0+incompatible
 )
@@ -101,11 +99,9 @@ require (
 	go.opentelemetry.io/otel/metric v1.24.0 // indirect
 	go.opentelemetry.io/otel/trace v1.24.0 // indirect
 	golang.org/x/crypto v0.46.0 // indirect
-	golang.org/x/mod v0.30.0 // indirect
 	golang.org/x/net v0.47.0 // indirect
 	golang.org/x/oauth2 v0.28.0 // indirect
 	golang.org/x/sync v0.19.0 // indirect
-	golang.org/x/telemetry v0.0.0-20251111182119-bc8e575c7b54 // indirect
 	golang.org/x/text v0.32.0 // indirect
 	google.golang.org/genproto v0.0.0-20240318140521-94a12d6c2237 // indirect
 	google.golang.org/genproto/googleapis/api v0.0.0-20240318140521-94a12d6c2237 // indirect

@@ -88,17 +88,24 @@ func TestMain(m *testing.M) {
 	os.Exit(code)
 }
 
+func TestCloseWithoutDial(t *testing.T) {
+	out, err := New(&output.Options{})
+	require.NoError(t, err)
+	require.NoError(t, out.Close())
+}
+
 func TestGcs(t *testing.T) {
 	out, err := New(&output.Options{
 		Addr: emulatorHostAndPort,
-		GcsOptions: output.GcsOptions{
+		GCSOptions: output.GCSOptions{
 			Bucket: bucket,
 			Object: objectname,
 		},
 	})
 	require.NoError(t, err)
 
-	err = out.DialContext(context.Background())
+	ctx, cancel := context.WithCancel(context.Background())
+	err = out.DialContext(ctx)
 	require.NoError(t, err)
 
 	event := map[string]interface{}{
@@ -112,15 +119,16 @@ func TestGcs(t *testing.T) {
 	assert.Equal(t, len(data), n)
 
 	// Need to close the Writer for the Object to be created in the Bucket.
-	out.Close()
+	cancel()
+	require.NoError(t, out.Close())
 
-	gcsClient, ctx, cancel, err := NewClient(emulatorHostAndPort)
+	readCtx := context.Background()
+	gcsClient, err := NewClient(readCtx, emulatorHostAndPort)
 	require.NoError(t, err)
 	t.Cleanup(func() { _ = gcsClient.Close() })
-	t.Cleanup(cancel)
 
 	o := gcsClient.Bucket(bucket).Object(objectname)
-	r, err := o.NewReader(ctx)
+	r, err := o.NewReader(readCtx)
 	require.NoError(t, err)
 
 	body, err := io.ReadAll(r)

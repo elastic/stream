@@ -119,11 +119,16 @@ func (o *Output) Close() error {
 // Write writes b to the connection. A newline is appended for stream-oriented
 // protocols (tcp, tls, unix); UDP datagrams are written as-is.
 func (o *Output) Write(b []byte) (int, error) {
+	if o.conn == nil {
+		return 0, errors.New("not connected")
+	}
+
 	if o.opts.Protocol == "udp" {
 		if err := o.limit.WaitN(o.ctx, len(b)); err != nil {
 			return 0, err
 		}
 		return o.conn.Write(b)
 	}
-	return o.conn.Write(append(b, '\n'))
+
+	return o.conn.Write(append(b[:len(b):len(b)], '\n'))
 }

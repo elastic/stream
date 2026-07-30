@@ -10,7 +10,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"net"
 	"net/http"
 	"os"
@@ -98,7 +97,7 @@ func TestHTTPServer(t *testing.T) {
           []
 `
 
-	f, err := ioutil.TempFile("", "test")
+	f, err := os.CreateTemp("", "test")
 	require.NoError(t, err)
 
 	t.Cleanup(func() { os.Remove(f.Name()) })
@@ -136,7 +135,7 @@ func TestHTTPServer(t *testing.T) {
 
 		assert.Equal(t, 200, resp.StatusCode) // should work when all criteria matches
 
-		body, err := ioutil.ReadAll(resp.Body)
+		body, err := io.ReadAll(resp.Body)
 		require.NoError(t, err)
 		resp.Body.Close()
 
@@ -156,7 +155,7 @@ func TestHTTPServer(t *testing.T) {
 
 		assert.Equal(t, 200, resp.StatusCode)
 
-		body, err := ioutil.ReadAll(resp.Body)
+		body, err := io.ReadAll(resp.Body)
 		require.NoError(t, err)
 		resp.Body.Close()
 
@@ -174,7 +173,7 @@ func TestHTTPServer(t *testing.T) {
 
 		assert.Equal(t, 404, resp.StatusCode) // must fail because p2 is present
 
-		body, err := ioutil.ReadAll(resp.Body)
+		body, err := io.ReadAll(resp.Body)
 		require.NoError(t, err)
 		resp.Body.Close()
 
@@ -188,7 +187,7 @@ func TestHTTPServer(t *testing.T) {
 		resp, err := http.DefaultClient.Do(req)
 		require.NoError(t, err)
 
-		body, err := ioutil.ReadAll(resp.Body)
+		body, err := io.ReadAll(resp.Body)
 		require.NoError(t, err)
 		resp.Body.Close()
 
@@ -208,20 +207,22 @@ func TestHTTPServer(t *testing.T) {
 			t.Fatalf("Do error: %v", err)
 		}
 
-		body, err := ioutil.ReadAll(resp.Body)
+		body, err := io.ReadAll(resp.Body)
 		if err != nil {
 			t.Fatalf("ReadAll error: %v", err)
 		}
 		resp.Body.Close()
 
 		// Extract the timestamp from {"ts": "2026-06-17T05:30:00Z"}.
-		var result struct{ Ts string }
+		var result struct {
+			TS string `json:"ts"`
+		}
 		if err := json.Unmarshal(body, &result); err != nil {
 			t.Fatalf("Unmarshal(%s) error: %v", body, err)
 		}
-		got, err := time.Parse(time.RFC3339, result.Ts)
+		got, err := time.Parse(time.RFC3339, result.TS)
 		if err != nil {
-			t.Fatalf("time.Parse(%q) error: %v", result.Ts, err)
+			t.Fatalf("time.Parse(%q) error: %v", result.TS, err)
 		}
 		if got.Before(before.Add(-time.Second)) || got.After(time.Now().UTC().Add(time.Second)) {
 			t.Errorf("now() = %s; want between %s and now", got, before)
@@ -274,19 +275,21 @@ func TestHTTPServer(t *testing.T) {
 			t.Fatalf("Do error: %v", err)
 		}
 
-		body, err := ioutil.ReadAll(resp.Body)
+		body, err := io.ReadAll(resp.Body)
 		if err != nil {
 			t.Fatalf("ReadAll error: %v", err)
 		}
 		resp.Body.Close()
 
-		var result struct{ Ts string }
+		var result struct {
+			TS string `json:"ts"`
+		}
 		if err := json.Unmarshal(body, &result); err != nil {
 			t.Fatalf("Unmarshal(%s) error: %v", body, err)
 		}
-		got, err := time.Parse(time.RFC3339, result.Ts)
+		got, err := time.Parse(time.RFC3339, result.TS)
 		if err != nil {
-			t.Fatalf("time.Parse(%q) error: %v", result.Ts, err)
+			t.Fatalf("time.Parse(%q) error: %v", result.TS, err)
 		}
 		if got.Before(before.Add(-time.Second)) || got.After(before.Add(time.Second)) {
 			t.Errorf("now(\"-720h\") = %s; want within 1s of %s", got, before)
@@ -388,7 +391,7 @@ func TestRunAsSequence(t *testing.T) {
         {"req7": "{{ .req_num }}"}
 `
 
-	f, err := ioutil.TempFile("", "test")
+	f, err := os.CreateTemp("", "test")
 	require.NoError(t, err)
 
 	t.Cleanup(func() { os.Remove(f.Name()) })
@@ -404,7 +407,7 @@ func TestRunAsSequence(t *testing.T) {
 	}
 
 	logger, err := log.NewLogger()
-	logger = logger.WithOptions(zap.OnFatal(zapcore.WriteThenPanic))
+	logger = logger.WithOptions(zap.WithFatalHook(zapcore.WriteThenPanic))
 	require.NoError(t, err)
 
 	t.Run("requests succeed if made in the expected order", func(t *testing.T) {
@@ -435,7 +438,7 @@ func TestRunAsSequence(t *testing.T) {
 			require.NoError(t, err)
 			assert.Equal(t, 200, resp.StatusCode)
 
-			body, err := ioutil.ReadAll(resp.Body)
+			body, err := io.ReadAll(resp.Body)
 			require.NoError(t, err)
 			resp.Body.Close()
 
@@ -457,7 +460,7 @@ func TestRunAsSequence(t *testing.T) {
 		require.NoError(t, err)
 		assert.Equal(t, 200, resp.StatusCode)
 
-		body, err := ioutil.ReadAll(resp.Body)
+		body, err := io.ReadAll(resp.Body)
 		require.NoError(t, err)
 		resp.Body.Close()
 
@@ -488,7 +491,7 @@ func TestExitOnUnmatchedRule(t *testing.T) {
         {"req1": "{{ .req_num }}"}
 `
 
-	f, err := ioutil.TempFile("", "test")
+	f, err := os.CreateTemp("", "test")
 	require.NoError(t, err)
 
 	t.Cleanup(func() { os.Remove(f.Name()) })
@@ -505,7 +508,7 @@ func TestExitOnUnmatchedRule(t *testing.T) {
 	}
 
 	logger, err := log.NewLogger()
-	logger = logger.WithOptions(zap.OnFatal(zapcore.WriteThenPanic))
+	logger = logger.WithOptions(zap.WithFatalHook(zapcore.WriteThenPanic))
 	require.NoError(t, err)
 
 	server, addr := startTestServer(t, &opts, logger.Sugar())

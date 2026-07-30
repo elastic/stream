@@ -39,8 +39,9 @@ func newLogRunner(options *output.Options, logger *zap.Logger) *cobra.Command {
 	return r.cmd
 }
 
+// Run executes the log command.
 func (r *logRunner) Run(args []string) error {
-	out, err := output.Initialize(r.out, r.logger, r.cmd.Context())
+	out, err := output.Initialize(r.cmd.Context(), r.out, r.logger)
 	if err != nil {
 		return err
 	}
