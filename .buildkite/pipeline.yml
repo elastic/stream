@@ -12,8 +12,6 @@ steps:
   - label: ":golangci-lint: Lint"
     key: "lint"
     command:
-      - "sudo apt-get update"
-      - "sudo apt-get install -y libpcap-dev"
       - ".buildkite/scripts/lint.sh"
     notify:
       - github_commit_status:
@@ -25,8 +23,6 @@ steps:
   - label: ":go: Build-${GOLANG_VERSION}"
     key: "build"
     command:
-      - "sudo apt-get update"
-      - "sudo apt-get install -y libpcap-dev"
       - ".buildkite/scripts/build.sh"
     notify:
       - github_commit_status:
@@ -39,8 +35,6 @@ steps:
   - label: ":go: Test-${GOLANG_VERSION}"
     key: "test"
     command:
-      - "sudo apt-get update"
-      - "sudo apt-get install -y libpcap-dev"
       - ".buildkite/scripts/go-test.sh"
     notify:
       - github_commit_status:

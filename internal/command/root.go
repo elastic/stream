@@ -20,7 +20,6 @@ import (
 	"github.com/spf13/pflag"
 	"go.uber.org/multierr"
 	"go.uber.org/zap"
-	"golang.org/x/sys/unix"
 
 	"github.com/elastic/go-concert/ctxtool/osctx"
 	"github.com/elastic/go-concert/timed"
@@ -154,14 +153,14 @@ func waitForStartSignal(ctx context.Context, opts *output.Options, logger *zap.L
 		return nil
 	}
 
-	num := unix.SignalNum(opts.StartSignal)
-	if num == 0 {
-		return fmt.Errorf("unknown signal %v", opts.StartSignal)
+	sig, err := lookupSignal(opts.StartSignal)
+	if err != nil {
+		return err
 	}
 
 	// Wait for the signal or the command context to be done.
 	logger.Sugar().Infow("Waiting for signal.", "start-signal", opts.StartSignal)
-	startCtx, _ := osctx.WithSignal(ctx, os.Signal(num))
+	startCtx, _ := osctx.WithSignal(ctx, sig)
 	<-startCtx.Done()
 	return nil
 }
