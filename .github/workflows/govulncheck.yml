@@ -1,0 +1,31 @@
+name: govulncheck
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  govulncheck:
+    name: vulnerability check
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Read .go-version file
+        id: goversion
+        run: echo "::set-output name=version::$(cat .go-version)"
+
+      - uses: actions/setup-go@v6
+        with:
+          go-version: "${{ steps.goversion.outputs.version }}"
+
+      - name: govulncheck
+        uses: golang/govulncheck-action@v1
+        with:
+          go-version-file: .go-version
+          go-package: ./...
