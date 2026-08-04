@@ -20,7 +20,37 @@ Input data can be read from:
 
 - log file - Newline delimited files are streamed line by line.
 - pcap file - Each packet's transport layer payload is streamed as a packet.
-  Useful for replaying netflow and IPFIX captures.
+  Useful for replaying netflow and IPFIX captures. Both pcap and pcapng files are
+  supported, including gzip compressed ones.
+
+## Installation
+
+Install the latest release with Go:
+
+```bash
+go install github.com/elastic/stream@latest
+```
+
+stream is pure Go, so this works on Linux, macOS, and Windows without a C
+compiler or any system libraries.
+
+Alternatively, use the container image:
+
+```bash
+docker pull docker.elastic.co/observability/stream:main
+```
+
+The `main` tag tracks the main branch. Substitute a release tag, such as
+`v0.23.0`, to pin to a specific version.
+
+The image is built `FROM scratch` and contains only the stream binary and root
+certificates. There is no shell inside it.
+
+### Platform notes
+
+`--start-signal` accepts any signal name on Unix-like systems. On Windows only
+`SIGINT` and `SIGTERM` are recognized, because those are the only signals the Go
+runtime emulates there.
 
 ## HTTP Server mock reference
 

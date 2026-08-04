@@ -1,0 +1,15 @@
+```release-note:enhancement
+build: Removed the libpcap dependency by reading capture files with pure Go. stream now builds with CGO_ENABLED=0, so `go install github.com/elastic/stream@latest` works without libpcap or a C compiler.
+```
+
+```release-note:enhancement
+Added Windows support. stream previously failed to compile for Windows.
+```
+
+```release-note:enhancement
+pcap: Report an error when a capture file cannot be parsed instead of retrying the unreadable record indefinitely.
+```
+
+```release-note:note
+The Docker image is now built FROM scratch rather than from Alpine, because the binary is statically linked and no longer needs libpcap. The image no longer contains a shell or any other userland utilities.
+```

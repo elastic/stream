@@ -5,8 +5,17 @@
 package command
 
 import (
+	"bufio"
+	"bytes"
+	"compress/gzip"
+	"errors"
+	"fmt"
+	"io"
+	"os"
+
 	"github.com/google/gopacket"
-	"github.com/google/gopacket/pcap"
+	"github.com/google/gopacket/layers"
+	"github.com/google/gopacket/pcapgo"
 	"github.com/spf13/cobra"
 	"go.uber.org/zap"
 
@@ -55,27 +64,89 @@ func (r *pcapRunner) Run(files []string) error {
 	return nil
 }
 
+// pcapNgMagic is the block type of the Section Header Block that begins every
+// pcapng file. It is palindromic, so it identifies the format regardless of the
+// byte order the file was written in.
+var pcapNgMagic = []byte{0x0a, 0x0d, 0x0d, 0x0a}
+
+// gzipMagic is the two byte header that begins every gzip stream.
+var gzipMagic = []byte{0x1f, 0x8b}
+
+// newPacketReader returns a packet source for the pcap or pcapng data in r,
+// along with the link type of its packets. Gzip compressed captures are
+// decompressed transparently.
+func newPacketReader(r io.Reader) (gopacket.PacketDataSource, layers.LinkType, error) {
+	br := bufio.NewReader(r)
+
+	if magic, err := br.Peek(len(gzipMagic)); err == nil && bytes.Equal(magic, gzipMagic) {
+		gzipReader, err := gzip.NewReader(br)
+		if err != nil {
+			return nil, 0, fmt.Errorf("failed to open gzip stream: %w", err)
+		}
+		br = bufio.NewReader(gzipReader)
+	}
+
+	magic, err := br.Peek(len(pcapNgMagic))
+	if err != nil {
+		return nil, 0, fmt.Errorf("failed to read capture file header: %w", err)
+	}
+
+	if bytes.Equal(magic, pcapNgMagic) {
+		opts := pcapgo.DefaultNgReaderOptions
+		// The defaults already mirror libpcap: the link type comes from the
+		// first interface and packets from interfaces with a differing link
+		// type are ignored. Skipping unknown section versions is recommended by
+		// the pcapng spec and matches libpcap, which would otherwise leave a
+		// capture containing a newer section unreadable.
+		opts.SkipUnknownVersion = true
+
+		reader, err := pcapgo.NewNgReader(br, opts)
+		if err != nil {
+			return nil, 0, fmt.Errorf("invalid pcapng header: %w", err)
+		}
+		return reader, reader.LinkType(), nil
+	}
+
+	reader, err := pcapgo.NewReader(br)
+	if err != nil {
+		return nil, 0, fmt.Errorf("invalid pcap header: %w", err)
+	}
+	return reader, reader.LinkType(), nil
+}
+
 func (r *pcapRunner) sendPCAP(path string, out output.Output) error {
 	logger := r.logger.With("pcap", path)
 
-	f, err := pcap.OpenOffline(path)
+	f, err := os.Open(path)
 	if err != nil {
 		return err
 	}
 	defer f.Close()
 
+	source, linkType, err := newPacketReader(f)
+	if err != nil {
+		return fmt.Errorf("failed to read %s: %w", path, err)
+	}
+
 	// Process packets in PCAP and get flow records.
 	var totalBytes, totalPackets int
-	packetSource := gopacket.NewPacketSource(f, f.LinkType())
-	for packet := range packetSource.Packets() {
-		if r.cmd.Context().Err() != nil {
-			break
+readPackets:
+	for r.cmd.Context().Err() == nil {
+		data, _, err := source.ReadPacketData()
+		switch {
+		case err == nil:
+		case errors.Is(err, io.EOF):
+			// End of the capture.
+			break readPackets
+		case errors.Is(err, io.ErrUnexpectedEOF):
+			// Tolerate truncated captures and stream what was readable.
+			logger.Warnw("Capture file is truncated, stopping early", "total_packets", totalPackets)
+			break readPackets
+		default:
+			return fmt.Errorf("failed to read packet %d from %s: %w", totalPackets+1, path, err)
 		}
 
-		if packet == nil {
-			logger.Warnw("Skipping nil packet")
-			continue
-		}
+		packet := gopacket.NewPacket(data, linkType, gopacket.Default)
 
 		tl := packet.TransportLayer()
 		if tl == nil {
