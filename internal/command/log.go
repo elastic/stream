@@ -6,6 +6,7 @@ package command
 
 import (
 	"bufio"
+	"fmt"
 	"os"
 
 	"github.com/spf13/cobra"
@@ -13,12 +14,14 @@ import (
 
 	"github.com/elastic/stream/internal/cmdutil"
 	"github.com/elastic/stream/internal/output"
+	"github.com/elastic/stream/internal/templates"
 )
 
 type logRunner struct {
-	logger *zap.SugaredLogger
-	cmd    *cobra.Command
-	out    *output.Options
+	logger   *zap.SugaredLogger
+	cmd      *cobra.Command
+	out      *output.Options
+	template bool
 }
 
 func newLogRunner(options *output.Options, logger *zap.Logger) *cobra.Command {
@@ -30,6 +33,9 @@ func newLogRunner(options *output.Options, logger *zap.Logger) *cobra.Command {
 			Args:  cmdutil.ValidateArgs(cobra.MinimumNArgs(1), cmdutil.RegularFiles),
 		},
 	}
+
+	r.cmd.PersistentFlags().BoolVar(&r.template, "template", false,
+		"evaluate each log line as a Go text/template before sending, using the same functions as the http-server config (e.g. now)")
 
 	r.cmd.RunE = func(_ *cobra.Command, args []string) error {
 		r.logger = logger.Sugar().With("address", options.Addr)
@@ -80,7 +86,17 @@ func (r *logRunner) sendLog(path string, out output.Output) error {
 		}
 
 		logger.Debugw("Sending log line.", "line_number", totalLines+1)
-		n, err := out.Write(s.Bytes())
+
+		line := s.Bytes()
+		if r.template {
+			rendered, err := templates.Render(s.Text())
+			if err != nil {
+				return fmt.Errorf("failed to render template on line %d of %s: %w", totalLines+1, path, err)
+			}
+			line = rendered
+		}
+
+		n, err := out.Write(line)
 		if err != nil {
 			return err
 		}
