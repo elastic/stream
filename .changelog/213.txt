@@ -1,0 +1,3 @@
+```release-note:enhancement
+log: Added a `--template` flag that evaluates each log line as a Go template before sending, using the same functions as the http-server config (including `now`). This lets streamed fixtures keep timestamps current relative to wall-clock time.
+```

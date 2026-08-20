@@ -18,7 +18,9 @@ stream is a test utility for streaming data via:
 
 Input data can be read from:
 
-- log file - Newline delimited files are streamed line by line.
+- log file - Newline delimited files are streamed line by line. Lines can
+  optionally be evaluated as Go templates before sending (see
+  [Log input reference](#log-input-reference)).
 - pcap file - Each packet's transport layer payload is streamed as a packet.
   Useful for replaying netflow and IPFIX captures. Both pcap and pcapng files are
   supported, including gzip compressed ones.
@@ -51,6 +53,40 @@ certificates. There is no shell inside it.
 `--start-signal` accepts any signal name on Unix-like systems. On Windows only
 `SIGINT` and `SIGTERM` are recognized, because those are the only signals the Go
 runtime emulates there.
+
+## Log input reference
+
+The `log` subcommand streams a newline delimited file line by line to the
+configured output:
+
+```bash
+stream log --addr=localhost:8080 -p=tcp ./events.log
+```
+
+### Templating
+
+Pass `--template` to evaluate each line as a [Go template](https://golang.org/pkg/text/template/)
+before it is sent. This is useful for values that must stay current relative to
+wall-clock time, such as timestamps behind a rolling retention window:
+
+```bash
+stream log --addr=localhost:8080 -p=tcp --template ./events.log
+```
+
+With `--template` the line:
+
+```json
+{"eventTime":"{{ (now "-720h").Format "2006-01-02T15:04:05Z07:00" }}"}
+```
+
+is rendered to a timestamp 30 days in the past each time it is streamed. Each
+line is rendered independently, and a template error aborts the run and reports
+the offending line number.
+
+The same functions available to the `http-server` config `body`/`headers` are
+available here: `env`, `hostname`, `sum`, `file`, `glob`, `minify_json`, and
+`now` (see [HTTP Server mock reference](#http-server-mock-reference) for their
+descriptions). Missing template keys render as their zero value.
 
 ## HTTP Server mock reference
 

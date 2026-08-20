@@ -297,48 +297,6 @@ func TestHTTPServer(t *testing.T) {
 	})
 }
 
-func TestNow(t *testing.T) {
-	t.Run("no offset", func(t *testing.T) {
-		before := time.Now().UTC()
-		got, err := now()
-		if err != nil {
-			t.Fatalf("now() error: %v", err)
-		}
-		if got.Before(before.Add(-time.Second)) || got.After(time.Now().UTC().Add(time.Second)) {
-			t.Errorf("now() = %s; want within 1s of current time", got)
-		}
-	})
-
-	t.Run("negative offset", func(t *testing.T) {
-		before := time.Now().UTC().Add(-24 * time.Hour)
-		got, err := now("-24h")
-		if err != nil {
-			t.Fatalf("now(%q) error: %v", "-24h", err)
-		}
-		if got.Before(before.Add(-time.Second)) || got.After(before.Add(time.Second)) {
-			t.Errorf("now(%q) = %s; want within 1s of %s", "-24h", got, before)
-		}
-	})
-
-	t.Run("positive offset", func(t *testing.T) {
-		expected := time.Now().UTC().Add(2 * time.Hour)
-		got, err := now("2h")
-		if err != nil {
-			t.Fatalf("now(%q) error: %v", "2h", err)
-		}
-		if got.Before(expected.Add(-time.Second)) || got.After(expected.Add(time.Second)) {
-			t.Errorf("now(%q) = %s; want within 1s of %s", "2h", got, expected)
-		}
-	})
-
-	t.Run("invalid offset", func(t *testing.T) {
-		_, err := now("bogus")
-		if err == nil {
-			t.Error("now(\"bogus\") error = nil; want error")
-		}
-	})
-}
-
 func TestRunAsSequence(t *testing.T) {
 	cfg := `---
   as_sequence: true

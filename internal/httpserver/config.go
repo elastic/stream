@@ -5,17 +5,13 @@
 package httpserver
 
 import (
-	"encoding/json"
 	"errors"
-	"fmt"
-	"os"
-	"path/filepath"
-	"strings"
 	"text/template"
-	"time"
 
 	ucfg "github.com/elastic/go-ucfg"
 	"github.com/elastic/go-ucfg/yaml"
+
+	"github.com/elastic/stream/internal/templates"
 )
 
 type config struct {
@@ -52,15 +48,7 @@ type tpl struct {
 func (t *tpl) Unpack(in string) error {
 	parsed, err := template.New("").
 		Option("missingkey=zero").
-		Funcs(template.FuncMap{
-			"env":         env,
-			"hostname":    hostname,
-			"sum":         sum,
-			"file":        file,
-			"glob":        filepath.Glob,
-			"minify_json": minify,
-			"now":         now,
-		}).
+		Funcs(templates.Funcs()).
 		Parse(in)
 	if err != nil {
 		return err
@@ -87,49 +75,4 @@ func newConfigFromFile(file string) (*config, error) {
 	}
 
 	return &config, nil
-}
-
-func env(key string) string {
-	return os.Getenv(key)
-}
-
-func hostname() string {
-	h, _ := os.Hostname()
-	return h
-}
-
-func sum(a, b int) int {
-	return a + b
-}
-
-func file(path string) (string, error) {
-	b, err := os.ReadFile(path)
-	if err != nil {
-		return "", err
-	}
-	return string(b), nil
-}
-
-func minify(body string) (string, error) {
-	var buf strings.Builder
-	enc := json.NewEncoder(&buf)
-	enc.SetEscapeHTML(false)
-	err := enc.Encode(json.RawMessage(body))
-	return strings.TrimSpace(buf.String()), err
-}
-
-// now returns the current UTC time. An optional Go duration string
-// offsets the result (e.g. "-720h" for 30 days ago). The returned
-// time.Time value exposes its methods to templates, so callers can
-// format it as needed: {{ (now).Format "2006-01-02" }}.
-func now(offset ...string) (time.Time, error) {
-	t := time.Now().UTC()
-	if len(offset) == 0 {
-		return t, nil
-	}
-	d, err := time.ParseDuration(offset[0])
-	if err != nil {
-		return time.Time{}, fmt.Errorf("invalid duration %q: %w", offset[0], err)
-	}
-	return t.Add(d), nil
 }
