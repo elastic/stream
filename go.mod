@@ -1,6 +1,6 @@
 module github.com/elastic/stream
 
-go 1.26.5
+go 1.27.0
 
 require (
 	cloud.google.com/go/pubsub v1.37.0
